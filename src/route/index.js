@@ -11,8 +11,8 @@ const collection = client.db('NTUCourse-Neo').collection('courses');
 
 router.get('/search', async (req, res) => {
   const query = req.query.query;
-  console.log(query);
-  console.log(collection);
+  // console.log(query);
+  // console.log(collection);
   try {
     const result = await search(query, ['course_name', 'teacher'], collection);
 
