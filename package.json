@@ -19,6 +19,6 @@
     "nodemon": "^2.0.15"
   },
   "scripts": {
-    "server": "nodemon src/mongo_query.js --ext js --watch src --exec babel-node"
+    "server": "nodemon src/server.js --ext js --watch src --exec babel-node"
   }
 }
