@@ -1,16 +1,9 @@
 {
-  "name": "ncn-backend",
+  "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "https://github.com/NTUCourse-Neo/ncn-backend.git",
-  "author": "Wil0408 <dark6783251@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "nodemon": "^2.0.15"
-  },
-  "devDependencies": {
     "@babel/cli": "^7.16.0",
     "@babel/core": "^7.16.0",
     "@babel/node": "^7.16.0",
@@ -18,10 +11,14 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.16.0",
     "@babel/plugin-transform-arrow-functions": "^7.16.0",
     "@babel/preset-env": "^7.16.4",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "dotenv-defaults": "^3.0.0",
-    "mongoose": "^6.1.1"
+    "express": "^4.17.1",
+    "mongoose": "^6.0.13",
+    "nodemon": "^2.0.15"
   },
   "scripts": {
-	  "server": "nodemon server.js --ext js --exec babel-node"
+    "server": "nodemon src/server.js --ext js --watch src --exec babel-node"
   }
 }

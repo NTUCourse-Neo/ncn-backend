@@ -1,0 +1,10 @@
+@host = http://localhost:5000/api/v1
+
+
+POST {{host}}/courses/search
+content-type: application/json
+
+{
+    "query": "黃",
+    "paths": ["course_name", "teacher"]
+}
