@@ -9,6 +9,10 @@ const client = new MongoClient(process.env.MONGO_URL);
 client.connect();
 const collection = client.db('NTUCourse-Neo').collection('courses');
 
+router.get('/healthcheck', (req, res) => {
+  res.send('OK');
+});
+
 router.post('/search', async (req, res) => {
   const query = req.body.query;
   const paths = req.body.paths;
