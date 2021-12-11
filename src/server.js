@@ -13,6 +13,6 @@ app.use('/api/v1/courses', course_router);
 
 
 
-app.listen('5000', async () => {
+app.listen(5000 || process.env.PORT, () => {
   console.log('Server is running on port 5000');
 });
