@@ -1,7 +1,7 @@
 @host = http://localhost:5000/api/v1
 
 
-POST {{host}}/search
+POST {{host}}/courses/search
 content-type: application/json
 
 {
