@@ -9,11 +9,11 @@ router.get('/', async (req, res) => {
     let courses_pack;
     try {
         courses_pack = await courses.find();
-        res.status(200).json({message: courses_pack})
+        res.status(200).send({message: courses_pack})
         console.log('Get full courses package.')
     }
     catch (err) {
-        res.status(500).json({message: err})
+        res.status(500).send({message: err})
         console.error(err);
     }
 })
@@ -94,7 +94,7 @@ router.post('/ids', async (req, res) => {
   const enroll_method = filter.enroll_method;
 
   if(ids.length === 0) {
-    res.status(404).send('No courses found');
+    res.status(200).send('No courses found');
   }
   else {
     if(strict_match) {
@@ -111,10 +111,12 @@ router.post('/ids', async (req, res) => {
             record_time_list.push(constraint_clause);
           }
         }
-        record_time = {
-          $or: record_time_list
+        if(record_time_list.length != 0) {
+          record_time = {
+            $or: record_time_list
+          }
+          filter_condition.push(record_time); 
         }
-        filter_condition.push(record_time); 
       }
 
       if(department !== null && department.length != 0) {
@@ -154,11 +156,19 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(enroll);
       }
 
-      let search = {
-        $and: [
-          {"_id": {$in: ids}},
-          {$and: filter_condition}
-        ]
+      let search;
+      if(filter_condition.length == 0) {
+        search = {
+          "_id": {$in: ids}
+        }
+      }
+      else {
+        search = {
+          $and: [
+            {"_id": {$in: ids}},
+            {$and: filter_condition}
+          ]
+        }
       }
       try {
         const result_num = await courses.find(search).count();
@@ -188,11 +198,12 @@ router.post('/ids', async (req, res) => {
             record_time_list.push(constraint_clause);
           }
         }
-        record_time = {
-          $or: record_time_list
+        if(record_time_list.length != 0) {
+          record_time = {
+            $or: record_time_list
+          }
+          filter_condition.push(record_time); 
         }
-        // console.log(record_time);
-        filter_condition.push(record_time); 
       }
 
       if(department !== null && department.length != 0) {
@@ -231,12 +242,19 @@ router.post('/ids', async (req, res) => {
         }
         filter_condition.push(enroll);
       }
-      console.log(filter_condition);
-      let search = {
-        $and: [
-          {"_id": {$in: ids}},
-          {$or: filter_condition}
-        ]
+      let search;
+      if(filter_condition.length == 0) {
+        search = {
+          "_id": {$in: ids}
+        }
+      }
+      else {
+        search = {
+          $and: [
+            {"_id": {$in: ids}},
+            {$or: filter_condition}
+          ]
+        }
       }
       try {
         const result_num = await courses.find(search).count();
