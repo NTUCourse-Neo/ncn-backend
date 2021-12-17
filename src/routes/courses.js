@@ -29,23 +29,7 @@ router.post('/search', async (req, res) => {
       res.status(500).send('Internal Server Error');
     }
   });
-
 /*
-  filter: {
-    time: [
-      ["1","2","3",...,"A","B","C",...],  // Mon
-      ["1","2","3",...,"A","B","C",...],  // Tue
-      ["1","2","3",...,"A","B","C",...],  // Wed
-      ["1","2","3",...,"A","B","C",...],  // Thur
-      ["1","2","3",...,"A","B","C",...],  // Fri
-      ["1","2","3",...,"A","B","C",...],  // Sat
-      ["1","2","3",...,"A","B","C",...]   // Sun
-    ],
-    department: [str],
-    category: [str],
-  }
-*/
-//EX: {_id: {$in: ["1101_97009","1101_97115"]},"time_loc_pair.time.2": {$all: ["3","4"]}}
 router.post('/ids', async (req, res) => {
   const course_list = req.body.courses;
   const filter = req.body.filter; 
@@ -84,5 +68,180 @@ router.post('/ids', async (req, res) => {
     }
   }
 });
+*/
+router.post('/ids', async (req, res) => {
+  const ids = req.body.ids;
+  const filter = req.body.filter;
+  const batch_size = req.body.batch_size;
+  const offset = req.body.offset;
+
+  const strict_match = filter.strict_match;
+  const time = filter.time;
+  const department = filter.department;
+  const category = filter.category;
+  const enroll_method = filter.enroll_method;
+
+  if(ids.length === 0) {
+    res.status(404).send('No courses found');
+  }
+  else {
+    if(strict_match) {
+      let filter_condition = [];
+      if(time !== null) {
+        let record_time_list = [];
+        let record_time;
+        for(let i=0; i<time.length; i++) {
+          if(time[i].length != 0) {
+            let constraint_title = 'time_loc_pair.time.' + (i+1);
+            let constraint_clause = {
+              [constraint_title]: time[i]
+            }
+            record_time_list.push(constraint_clause);
+          }
+        }
+        record_time = {
+          $or: record_time_list
+        }
+        filter_condition.push(record_time); 
+      }
+
+      if(department !== null) {
+        let dep_list = [];
+        let dep;
+        for(let i=0; i<department.length; i++) {
+          let dep_clause = {
+            "departments_dependency": department[i]
+          }
+          dep_list.push(dep_clause);
+        }
+        dep = {
+          $or: dep_list
+        }
+        filter_condition.push(dep);
+      }
+
+      if(category !== null) {
+        let cat_list = [];
+        let cat;
+        for(let i=0; i<category.length; i++) {
+          let cat_clause = {
+            "category": category[i]
+          }
+          cat_list.push(cat_clause);
+        }
+        cat = {
+          $or: cat_list
+        }
+        filter_condition.push(cat);
+      }
+      
+      if(enroll_method !== null) {
+        let enroll = {
+          "enroll_method": enroll_method
+        }
+        filter_condition.push(enroll);
+      }
+
+      let search = {
+        $and: [
+          {"_id": {$in: ids}},
+          {$and: filter_condition}
+        ]
+      }
+      try {
+        const result_num = await courses.find(search).count();
+        const result = await courses.find(search).skip(offset).limit(batch_size);
+        if(offset == 0) {
+          res.status(200).send({courses: result, total_count: result_num});
+        }
+        else {
+          res.status(200).send({courses: result, total_count: null});
+        }
+      }
+      catch (err) {
+        res.status(500).send({message: err});
+      }
+    }
+    else {
+      let filter_condition = [];
+      if(time !== null) {
+        let record_time_list = [];
+        let record_time;
+        for(let i=0; i<time.length; i++) {
+          if(time[i].length != 0) {
+            let constraint_title = 'time_loc_pair.time.' + (i+1);
+            let constraint_clause = {
+              [constraint_title]: {$all: time[i]}
+            }
+            record_time_list.push(constraint_clause);
+          }
+        }
+        record_time = {
+          $or: record_time_list
+        }
+        // console.log(record_time);
+        filter_condition.push(record_time); 
+      }
+
+      if(department !== null) {
+        let dep_list = [];
+        let dep;
+        for(let i=0; i<department.length; i++) {
+          let dep_clause = {
+            "departments_dependency": department[i]
+          }
+          dep_list.push(dep_clause);
+        }
+        dep = {
+          $or: dep_list
+        }
+        filter_condition.push(dep);
+      }
+
+      if(category !== null) {
+        let cat_list = [];
+        let cat;
+        for(let i=0; i<category.length; i++) {
+          let cat_clause = {
+            "category": category[i]
+          }
+          cat_list.push(cat_clause);
+        }
+        cat = {
+          $or: cat_list
+        }
+        filter_condition.push(cat);
+      }
+      
+      if(enroll_method !== null) {
+        let enroll = {
+          "enroll_method": enroll_method
+        }
+        filter_condition.push(enroll);
+      }
+      console.log(filter_condition);
+      let search = {
+        $and: [
+          {"_id": {$in: ids}},
+          {$or: filter_condition}
+        ]
+      }
+      try {
+        const result_num = await courses.find(search).count();
+        const result = await courses.find(search).skip(offset).limit(batch_size);
+        if(offset == 0) {
+          res.status(200).send({courses: result, total_count: result_num});
+        }
+        else {
+          res.status(200).send({courses: result, total_count: null});
+        }
+      }
+      catch (err) {
+        res.status(500).send({message: err});
+      }
+    }
+  }
+
+})
 
 export default router;
