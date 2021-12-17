@@ -21,12 +21,24 @@ router.get('/', async (req, res) => {
 router.post('/search', async (req, res) => {
     const query = req.body.query;
     const paths = req.body.paths;
+    if (query === "" || !query) {
+      // if query is empty, return all courses
+      try {
+          const courses_pack = await courses.find().select({"_id": 1});
+          let result = courses_pack.map(a => a._id);
+          res.status(200).send({ids: result});
+      }catch (err) {
+          res.status(500).send({message: "Internal Server Error", log: err})
+          console.error(err);
+      }
+    }
     try {
       const result = await search(query, paths, collection);
   
-      res.status(200).send({ courses: result });
-    } catch {
-      res.status(500).send('Internal Server Error');
+      res.status(200).send({ ids: result });
+    } catch(err) {
+      res.status(500).send({message: "Internal Server Error", log: err})
+      console.error(err);
     }
   });
 /*
@@ -105,7 +117,7 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(record_time); 
       }
 
-      if(department !== null) {
+      if(department !== null && department.length != 0) {
         let dep_list = [];
         let dep;
         for(let i=0; i<department.length; i++) {
@@ -120,7 +132,7 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(dep);
       }
 
-      if(category !== null) {
+      if(category !== null && category.length != 0) {
         let cat_list = [];
         let cat;
         for(let i=0; i<category.length; i++) {
@@ -183,7 +195,7 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(record_time); 
       }
 
-      if(department !== null) {
+      if(department !== null && department.length != 0) {
         let dep_list = [];
         let dep;
         for(let i=0; i<department.length; i++) {
@@ -198,7 +210,7 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(dep);
       }
 
-      if(category !== null) {
+      if(category !== null && category.length != 0) {
         let cat_list = [];
         let cat;
         for(let i=0; i<category.length; i++) {
@@ -213,7 +225,7 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(cat);
       }
       
-      if(enroll_method !== null) {
+      if(enroll_method !== null && enroll_method.length != 0) {
         let enroll = {
           "enroll_method": enroll_method
         }
