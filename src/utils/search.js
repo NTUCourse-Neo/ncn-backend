@@ -5,14 +5,14 @@ async function search(query, paths = ['course_name', 'teacher'], collection) {
       .aggregate([
         {
           $search: {
-            index: 'test',
+            index: 'default',
             text: {
               query: `${query}`,
               path: paths,
             },
           },
         },
-        { $limit: 20 },
+        { $limit: 10000 },
         { $project: { _id: 1 } },
       ])
       .toArray();
