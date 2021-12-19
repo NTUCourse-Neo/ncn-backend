@@ -41,46 +41,7 @@ router.post('/search', async (req, res) => {
       console.error(err);
     }
   });
-/*
-router.post('/ids', async (req, res) => {
-  const course_list = req.body.courses;
-  const filter = req.body.filter; 
-  if(course_list.length === 0) {
-    res.status(404).send('No courses found');
-  }
-  else {
-    let days = filter.time;
-    let record = [];
-    for(let i=0; i<days.length; i++) {
-      if(days[i].length != 0) {
-        let constraint_title = 'time_loc_pair.time.' + (i+1);
-        let constraint_clause = {
-          [constraint_title]: {$all: days[i]}
-        }
-        record.push(constraint_clause);
-      }
-    }
-    let search = {
-      '_id': {$in: course_list},
-      $or: record,
-    }
-    // console.log(search);
-    try {
-      const result = await courses.find(search);
-      if(result.length != 0) {
-        res.status(200).send({courses: result});
-      }
-      else {
-        res.status(404).send({message: 'No courses found'});
-      }
-    }
-    catch (err) {
-      res.status(500).json({message: err})
-      console.error(err);
-    }
-  }
-});
-*/
+
 router.post('/ids', async (req, res) => {
   const ids = req.body.ids;
   const filter = req.body.filter;
@@ -113,7 +74,7 @@ router.post('/ids', async (req, res) => {
         }
         if(record_time_list.length != 0) {
           record_time = {
-            $or: record_time_list
+            $and: record_time_list
           }
           filter_condition.push(record_time); 
         }
@@ -129,7 +90,7 @@ router.post('/ids', async (req, res) => {
           dep_list.push(dep_clause);
         }
         dep = {
-          $or: dep_list
+          $and: dep_list
         }
         filter_condition.push(dep);
       }
@@ -144,14 +105,22 @@ router.post('/ids', async (req, res) => {
           cat_list.push(cat_clause);
         }
         cat = {
-          $or: cat_list
+          $and: cat_list
         }
         filter_condition.push(cat);
       }
       
-      if(enroll_method !== null) {
-        let enroll = {
-          "enroll_method": enroll_method
+      if(enroll_method !== null && enroll_method.length != 0) {
+        let enroll_list = [];
+        let enroll;
+        for(let i=0; i<enroll_method.length; i++) {
+          let enroll_clause = {
+            "enroll_method": enroll_method[i]
+          }
+          enroll_list.push(enroll_clause);
+        }
+        enroll = {
+          $and: enroll_list
         }
         filter_condition.push(enroll);
       }
@@ -237,11 +206,20 @@ router.post('/ids', async (req, res) => {
       }
       
       if(enroll_method !== null && enroll_method.length != 0) {
-        let enroll = {
-          "enroll_method": enroll_method
+        let enroll_list = [];
+        let enroll;
+        for(let i=0; i<enroll_method.length; i++) {
+          let enroll_clause = {
+            "enroll_method": enroll_method[i]
+          }
+          enroll_list.push(enroll_clause);
+        }
+        enroll = {
+          $or: enroll_list
         }
         filter_condition.push(enroll);
       }
+
       let search;
       if(filter_condition.length == 0) {
         search = {
@@ -252,7 +230,7 @@ router.post('/ids', async (req, res) => {
         search = {
           $and: [
             {"_id": {$in: ids}},
-            {$or: filter_condition}
+            {$and: filter_condition}
           ]
         }
       }
