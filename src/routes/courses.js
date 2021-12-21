@@ -55,7 +55,7 @@ router.post('/ids', async (req, res) => {
   const enroll_method = filter.enroll_method;
 
   if(ids.length === 0) {
-    res.status(200).send('No courses found');
+    res.status(200).send({courses: [], total_count: 0});
   }
   else {
     if(strict_match) {
