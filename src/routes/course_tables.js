@@ -1,6 +1,6 @@
 import express from 'express';
 import Course_table from '../models/Course_table';
-import {uuid} from 'uuidv4';
+
 
 const router = express.Router();
 
@@ -91,6 +91,7 @@ router.patch('/:id', async (req, res) => {
     const name = req.body.name;
     const user_id = req.body.user_id;
     const expire_ts = req.body.expire_ts;
+    const courses = req.body.courses;
 
     let target;
     try {
@@ -107,35 +108,6 @@ router.patch('/:id', async (req, res) => {
         target.name = name;
         target.user_id = user_id;
         target.expire_ts = expire_ts;
-        try {
-            await target.save();
-            res.status(200).send({course_table: target});
-        }
-        catch (err) {
-            res.statue(500).send({message: err});
-            console.error(err);
-        }
-    }
-   
-})
-
-router.patch('/:id/courses', async (req, res) => {
-    const _id = req.params.id;
-    // const operation = req.body.operation;
-    const courses = req.body.courses;
-
-    let target;
-    try {
-        target = await Course_table.findOne({'_id': _id});
-    }
-    catch (err) {
-        console.error(err);
-    }
-
-    if(!target) {
-        res.status(200).send({message: 'Course not found.'});
-    }
-    else {
         target.courses = courses;
         try {
             await target.save();
@@ -146,8 +118,7 @@ router.patch('/:id/courses', async (req, res) => {
             console.error(err);
         }
     }
-
-
+   
 })
 
 router.delete('/', async (req, res) => {
