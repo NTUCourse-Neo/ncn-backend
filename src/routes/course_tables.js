@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
     
     if(existing) {
         console.log('course table is existing')
-        res.status(400).send({course_table: existing});        
+        res.status(400).send({course_table: existing, message: 'course table not exist'});        
     }
     else {
         try {
@@ -86,10 +86,10 @@ router.post('/', async (req, res) => {
             // let expire_date = new Date(new_course_table.expire_ts);
             // console.log(new_course_table.expire_ts);
             // console.log(expire_date.toString());
-            res.status(200).send({course_table: new_course_table});
+            res.status(200).send({course_table: new_course_table, message: 'create course table successfully'});
         }
         catch (err) {
-            res.status(500).send({message: err});
+            res.status(500).send({course_table: null, message: err});
             console.error(err);
         }     
     }
