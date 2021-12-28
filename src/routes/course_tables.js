@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
     
     if(existing) {
         console.log('course table is existing')
-        res.status(400).send({course_table: existing, message: 'course table not exist'});        
+        res.status(400).send({course_table: existing, message: 'course table is existing'});        
     }
     else {
         try {
