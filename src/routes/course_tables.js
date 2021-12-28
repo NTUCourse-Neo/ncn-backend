@@ -103,7 +103,7 @@ router.patch('/:id', async (req, res) => {
     const expire_ts = req.body.expire_ts;
     const courses = req.body.courses;
 
-    const current_ts = + new Date();
+    let current_ts = + new Date();
     current_ts = parseInt(current_ts/1000, 10);
     let target;
     try {
