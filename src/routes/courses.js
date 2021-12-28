@@ -221,22 +221,45 @@ router.post('/ids', async (req, res) => {
       }
 
       let search;
-      if(filter_condition.length == 0) {
-        search = {
-          "_id": {$in: ids}
-        }
+      if(filter_condition.length === 0) {
+        search = [
+          {
+              $match: { _id: { $in: ids } }
+          },
+          {
+              $addFields: {
+                  index: { $indexOfArray: [ ids, "$_id" ] }
+              }
+          },
+          {
+              $sort: { index: 1 }
+          }
+        ];
       }
       else {
-        search = {
-          $and: [
-            {"_id": {$in: ids}},
-            {$and: filter_condition}
-          ]
-        }
+        search = 
+        [
+          {
+              $match: {
+                $and: [
+                  { _id: { $in: ids } },
+                  { $and: filter_condition }
+                ]
+              }
+          },
+          {
+              $addFields: {
+                  index: { $indexOfArray: [ ids, "$_id" ] }
+              }
+          },
+          {
+              $sort: { index: 1 }
+          }
+        ];
       }
       try {
-        const result_num = await courses.find(search).count();
-        const result = await courses.find(search).skip(offset).limit(batch_size);
+        const result_num = await (await courses.aggregate(search)).length;
+        let result = await courses.aggregate(search).skip(offset).limit(batch_size);
         if(offset == 0) {
           res.status(200).send({courses: result, total_count: result_num});
         }
