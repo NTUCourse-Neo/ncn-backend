@@ -66,8 +66,9 @@ router.post('/', async (req, res) => {
     else {
         try {
             let day = 1;
-            let expire_time_interval = 1000 * 60 * 60 * 24 * day;
+            let expire_time_interval = 60 * 60 * 24 * day;
             let current_time = + new Date();
+            current_time = parseInt(current_time/1000, 10);
             let expire_time = current_time + expire_time_interval;
             let new_course_table = new Course_table({
                 _id: _id,
@@ -116,17 +117,42 @@ router.patch('/:id', async (req, res) => {
         res.status(200).send({course_table: null, message: 'Course not found.'});
     }
     else {
-        target.name = name;
-        target.user_id = user_id;
-        target.expire_ts = expire_ts;
-        target.courses = courses;
-        try {
-            await target.save();
-            res.status(200).send({course_table: target, message: 'Course table has been patched'});
+        if(user_id && expire_ts) {
+            res.status(403).send({course_table: null, message: 'User_id is not null, expire_ts should be null.'});
         }
-        catch (err) {
-            res.statue(500).send({course_table: null, message: err});
-            console.error(err);
+        else if(user_id && !expire_ts) {
+            target.name= name;
+            target.user_id = user_id;
+            target.expire_ts = expire_ts;
+            target.courses = courses;
+            try {
+                await target.save();
+                res.status(200).send({course_table: target, message: 'Course table has been patched'});
+            }
+            catch (err) {
+                res.statue(500).send({course_table: null, message: err});
+                console.error(err);
+            }
+        }
+        else {
+            if(current_ts > expire_ts) {
+                res.status(403).send({course_table: null, message: 'expire_ts is earlier than current time'});
+            }
+            else {
+                target.name= name;
+                target.user_id = user_id;
+                target.expire_ts = expire_ts;
+                target.courses = courses;
+                try {
+                    await target.save();
+                    res.status(200).send({course_table: target, message: 'Course table has been patched'});
+                }
+                catch (err) {
+                    res.statue(500).send({course_table: null, message: err});
+                    console.error(err);
+                }
+            }
+            
         }
     }
    
