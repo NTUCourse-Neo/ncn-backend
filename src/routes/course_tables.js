@@ -130,12 +130,15 @@ router.patch('/:id', async (req, res) => {
                 res.status(200).send({course_table: target, message: 'Course table has been patched'});
             }
             catch (err) {
-                res.statue(500).send({course_table: null, message: err});
+                res.status(500).send({course_table: null, message: err});
                 console.error(err);
             }
         }
         else {
-            if(current_ts > expire_ts) {
+            if(log_10(expire_ts) - log_10(current_ts) > 1) {
+                res.status(403).send({course_table: null, message: 'expire_ts is in milliseconds, please convert it to seconds'});
+            }
+            else if(current_ts > expire_ts) {
                 res.status(403).send({course_table: null, message: 'expire_ts is earlier than current time'});
             }
             else {
@@ -148,7 +151,7 @@ router.patch('/:id', async (req, res) => {
                     res.status(200).send({course_table: target, message: 'Course table has been patched'});
                 }
                 catch (err) {
-                    res.statue(500).send({course_table: null, message: err});
+                    res.status(500).send({course_table: null, message: err});
                     console.error(err);
                 }
             }
@@ -182,6 +185,10 @@ router.delete('/:id', async (req, res) => {
         console.error(err); 
     }
 })
+
+function log_10(x) {
+    return Math.log(x)/Math.log(10);
+}
 
 
 
