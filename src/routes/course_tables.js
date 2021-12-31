@@ -20,19 +20,13 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     let course_id = req.params.id;
     let result;
-    const expire_over_day = 1;
     try {
         result = await Course_table.findOne({'_id': course_id});
         let user_id = result.user_id;
         let expire_time_stamp = result.expire_ts;
         let current_time_stamp = + new Date();
         current_time_stamp = parseInt(current_time_stamp/1000, 10);   // convernt milliseconds to senconds
-        // console.log(expire_time_stamp);
-        // console.log(current_time_stamp);
-        let overtime = current_time_stamp - expire_time_stamp;
-        let overday = overtime/(60*60*24);
-        // console.log(overday);
-        if(!user_id && overday > expire_over_day) {
+        if(!user_id && (current_time_stamp > expire_time_stamp)) {
             res.status(403).send({course_table: null, message: "this course table is expired"});
         }
         else {
