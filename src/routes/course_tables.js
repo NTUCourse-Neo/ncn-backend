@@ -111,11 +111,15 @@ router.patch('/:id', async (req, res) => {
         res.status(200).send({course_table: null, message: 'Course not found.'});
     }
     else {
-        if(user_id && expire_ts) {
+        const origin_expire_ts = target.expire_ts;
+        if(origin_expire_ts && (current_ts > origin_expire_ts)) {
+            res.status(403).send({course_table: null, message: 'Course table is expired'});
+        }
+        else if(user_id && expire_ts) {
             res.status(403).send({course_table: null, message: 'User_id is not null, expire_ts should be null.'});
         }
         else if(user_id && !expire_ts) {
-            target.name= name;
+            target.name = name;
             target.user_id = user_id;
             target.expire_ts = expire_ts;
             target.courses = courses;
