@@ -55,9 +55,11 @@ router.post('/ids', async (req, res) => {
   const enroll_method = filter.enroll_method;
 
   if(ids.length === 0) {
+    console.log('No ids provided.');
     res.status(200).send({courses: [], total_count: 0});
   }
   else {
+    let search;
     if(strict_match) {
       let filter_condition = [];
       if(time !== null) {
@@ -124,8 +126,6 @@ router.post('/ids', async (req, res) => {
         }
         filter_condition.push(enroll);
       }
-
-      let search;
       if(filter_condition.length == 0) {
         search = {
           "_id": {$in: ids}
@@ -138,19 +138,6 @@ router.post('/ids', async (req, res) => {
             {$and: filter_condition}
           ]
         }
-      }
-      try {
-        const result_num = await courses.find(search).count();
-        const result = await courses.find(search).skip(offset).limit(batch_size);
-        if(offset == 0) {
-          res.status(200).send({courses: result, total_count: result_num});
-        }
-        else {
-          res.status(200).send({courses: result, total_count: null});
-        }
-      }
-      catch (err) {
-        res.status(500).send({message: err});
       }
     }
     else {
@@ -219,8 +206,6 @@ router.post('/ids', async (req, res) => {
         }
         filter_condition.push(enroll);
       }
-
-      let search;
       if(filter_condition.length === 0) {
         search = [
           {
@@ -257,19 +242,22 @@ router.post('/ids', async (req, res) => {
           }
         ];
       }
-      try {
-        const result_num = await (await courses.aggregate(search)).length;
-        let result = await courses.aggregate(search).skip(offset).limit(batch_size);
-        if(offset == 0) {
-          res.status(200).send({courses: result, total_count: result_num});
-        }
-        else {
-          res.status(200).send({courses: result, total_count: null});
-        }
-      }
-      catch (err) {
-        res.status(500).send({message: err});
-      }
+    }
+    let result_num;
+    let result;
+    try {
+      result_num = await (await courses.aggregate(search)).length;
+      result = await courses.aggregate(search).skip(offset).limit(batch_size);
+    }
+    catch (err) {
+      res.status(500).send({message: err});
+      return;
+    }
+    if(offset == 0) {
+      res.status(200).send({courses: result, total_count: result_num});
+    }
+    else {
+      res.status(200).send({courses: result, total_count: null});
     }
   }
 

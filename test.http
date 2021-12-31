@@ -8,3 +8,21 @@ content-type: application/json
     "query": "黃",
     "paths": ["course_name", "teacher"]
 }
+
+###
+
+POST {{host}}/courses/ids
+content-type: application/json
+
+{
+    "ids": ["1101_27674", "1101_30859"],
+    "filter": {
+        "strict_match": false,
+        "time": null,
+        "department": null,
+        "category": null,
+        "enroll_method": null
+    },
+    "batch_size": 100,
+    "offset": 0
+}

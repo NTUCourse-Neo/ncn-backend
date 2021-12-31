@@ -17,7 +17,8 @@
     "express": "^4.17.1",
     "mongoose": "^6.0.13",
     "nodemon": "^2.0.15",
-    "uuidv4": "^6.2.12"
+    "uuidv4": "^6.2.12",
+    "yarn": "^1.22.17"
   },
   "scripts": {
     "server": "nodemon src/server.js --ext js --watch src --exec babel-node"
