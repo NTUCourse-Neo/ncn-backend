@@ -11,6 +11,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.16.0",
     "@babel/plugin-transform-arrow-functions": "^7.16.0",
     "@babel/preset-env": "^7.16.4",
+    "axios": "^0.24.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv-defaults": "^3.0.0",

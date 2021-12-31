@@ -2,6 +2,7 @@ import express from 'express';
 import router from './routes/index';
 import dotenv from 'dotenv-defaults';
 import course_router from './routes/courses';
+import user_router from './routes/users';
 import course_table_router from './routes/course_tables';
 import cors from 'cors';
 import mongoose from 'mongoose';
@@ -14,6 +15,7 @@ app.use(express.json({limit: '5mb'}));
 app.use('/api/v1', router);
 app.use('/api/v1/courses', course_router);
 app.use('/api/v1/course_tables', course_table_router);
+app.use('/api/v1/users', user_router);
 
 dotenv.config();
 mongoose.connect(

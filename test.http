@@ -26,3 +26,25 @@ content-type: application/json
     "batch_size": 100,
     "offset": 0
 }
+
+###
+
+POST {{host}}/users/register
+content-Type: application/json
+
+{
+    "user":{
+        "email": "taste.ful.msa@gmail.com"
+    }
+}
+
+###
+
+PATCH {{host}}/users/1123892093
+Content-Type: application/json
+    
+    {
+        "user":{
+            "email": ""
+        }
+    }
