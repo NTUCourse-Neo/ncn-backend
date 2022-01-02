@@ -6,7 +6,7 @@ import * as auth0_client from "../utils/auth0_client";
 const router = express.Router();
 
 router.get('/:id', async (req, res) => {
-  const user_id = "auth0|"+req.params.id;
+  const user_id = req.params.id;
   let auth0_user;
   await auth0_client.get_token().then(async (token) => {
     await auth0_client.get_user_by_id(user_id, token).then(async (user) => {
@@ -21,13 +21,13 @@ router.get('/:id', async (req, res) => {
   try {
     let result = await Users.findOne({'_id': user_id});
     if(result){
-      res.status(200).send({user: result, auth0: auth0_user, message: "Successfully get user by id."});
+      res.status(200).send({db: result, auth0: auth0_user, message: "Successfully get user by id."});
     }else{
-      res.status(404).send({user: null, message: "User not found in MongoDB."});
+      res.status(404).send({db: null, message: "User not found in MongoDB."});
     }
   }
   catch (err) {
-      res.status(500).send({user: null, message: err});
+      res.status(500).send({db: null, message: err});
       console.error(err);
   }
 })
@@ -91,7 +91,7 @@ router.post('/register', async (req, res) => {
 });
 
 router.patch('/:id', async (req, res) => {
-  const user_id = "auth0|"+req.params.id;
+  const user_id = req.params.id;
   const patch_user = req.body.user;
   // Check if user exists
   try {
