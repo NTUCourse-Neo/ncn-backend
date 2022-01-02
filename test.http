@@ -29,7 +29,7 @@ content-type: application/json
 
 ###
 
-POST {{host}}/users/register
+POST {{host}}/users
 content-Type: application/json
 
 {
@@ -40,7 +40,7 @@ content-Type: application/json
 
 ###
 
-@id=61ceb6c3f995f80069e0da73
+@id=auth0|61ceb6c3f995f80069e0da73
 GET {{host}}/users/{{id}}
 Content-Type: application/json
 
@@ -51,7 +51,7 @@ Content-Type: application/json
 
 {
     "user":{
-        "name": "jc",
+        "name": "jc_hiroto",
         "student_id": "B07505032"
     }
 }

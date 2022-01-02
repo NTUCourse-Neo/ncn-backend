@@ -30,7 +30,7 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-router.post('/register', async (req, res) => {
+router.post('/', async (req, res) => {
   const email = req.body.user.email;
   try{
     if(!email){
