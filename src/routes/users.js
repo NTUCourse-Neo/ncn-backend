@@ -23,7 +23,7 @@ router.get('/:id', async (req, res) => {
     if(result){
       res.status(200).send({db: result, auth0: auth0_user, message: "Successfully get user by id."});
     }else{
-      res.status(404).send({db: null, message: "User not found in MongoDB."});
+      res.status(200).send({db: null, message: "User not found in MongoDB."});
     }
   }
   catch (err) {
