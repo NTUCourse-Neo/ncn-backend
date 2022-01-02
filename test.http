@@ -40,11 +40,18 @@ content-Type: application/json
 
 ###
 
-PATCH {{host}}/users/1123892093
+@id=61ceb6c3f995f80069e0da73
+GET {{host}}/users/{{id}}
 Content-Type: application/json
-    
-    {
-        "user":{
-            "email": ""
-        }
+
+###
+
+PATCH {{host}}/users/{{id}}
+Content-Type: application/json
+
+{
+    "user":{
+        "name": "jc",
+        "student_id": "B07505032"
     }
+}
