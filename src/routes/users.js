@@ -31,29 +31,29 @@ router.post('/', async (req, res) => {
   const email = req.body.user.email;
   try{
     if(!email){
-      res.status(400).send({message: "email is required"});
+      res.status(400).send({message: "email is required", user: null});
       return;
     }else{
       const db_user = await Users.findOne({'email': email});
       if(db_user){
-        res.status(400).send({message: "email is already registered"});
+        res.status(400).send({message: "email is already registered", user: null});
         return;
       }
       const token = await auth0_client.get_token()
-      const users = await auth0_client.get_user_by_email(email, token)
-      let user;
-      if(users.length === 0){
-        res.status(400).send({message: "email is not registered"});
+      const auth0_users = await auth0_client.get_user_by_email(email, token)
+      let auth0_user;
+      if(auth0_users.length === 0){
+        res.status(400).send({message: "email is not registered", user: null});
         return;
-      }else if(users.length === 1){
-        user = users[0];
+      }else if(auth0_users.length === 1){
+        auth0_user = auth0_users[0];
       }else{
-        user = users.filter(user => !user.identities.isSocial)[0];
+        auth0_user = auth0_users.filter(user => !user.identities.isSocial)[0];
       }
       let new_user = new Users({
-        _id: user.user_id,
-        name: user.name,
-        email: user.email,
+        _id: auth0_user.user_id,
+        name: auth0_user.name,
+        email: auth0_user.email,
         gender: 0,
         student_id: "",
         department: [],
@@ -65,7 +65,7 @@ router.post('/', async (req, res) => {
         history_courses: []
       });
       await new_user.save();
-      res.status(200).send({message: "User created", user: new_user});
+      res.status(200).send({message: "User created", user: {db: new_user, auth0: auth0_user}});
       return;
     }
   }catch(err){
