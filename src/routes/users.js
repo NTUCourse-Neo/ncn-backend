@@ -7,25 +7,22 @@ const router = express.Router();
 
 router.get('/:id', async (req, res) => {
   const user_id = req.params.id;
-  let auth0_user;
   try {
     const token = await auth0_client.get_token();
-    const user = await auth0_client.get_user_by_id(user_id, token);
-    if (!user){
+    const auth0_user = await auth0_client.get_user_by_id(user_id, token);
+    if (!auth0_user){
       res.status(404).send({user: null, message: "User is not registered in Auth0"});
       return;
-    }else{
-      auth0_user = user;
     }
-    let result = await Users.findOne({'_id': user_id}).exec();
-    if(result){
-      res.status(200).send({db: result, auth0: auth0_user, message: "Successfully get user by id."});
+    const db_user = await Users.findOne({'_id': user_id}).exec();
+    if(db_user){
+      res.status(200).send({user: {db: db_user, auth0: auth0_user}, message: "Successfully get user by id."});
     }else{
-      res.status(200).send({db: null, message: "User not found in MongoDB."});
+      res.status(200).send({user: null, message: "User not found in MongoDB."});
     }
   }
   catch (err) {
-      res.status(500).send({db: null, message: err});
+      res.status(500).send({user: null, message: err});
       console.error(err);
   }
 })
