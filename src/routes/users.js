@@ -73,6 +73,40 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.post('/:id/coursetable', async (req, res) => {
+  const course_table_id = req.body.course_table_id;
+  const user_id = req.params.id;
+  try{
+    if(!course_table_id || !user_id){
+      res.status(400).send({message: "course_table_id and user_id is required", user: null});
+      return;
+    }else{
+      const token = await auth0_client.get_token()
+      const auth0_users = await auth0_client.get_user_by_email(email, token)
+      // Check if user is registered in Auth0
+      if(auth0_users.length === 0){
+        res.status(400).send({message: "User is not registered", user: null});
+        return;
+      }
+      // Check if user is registered in MongoDB
+      const db_user = await Users.findOne({'_id': user_id});
+      if(!db_user){
+        res.status(400).send({message: "User data not found", user: null});
+        return;
+      }
+      // TODO: check if course_table_id is already in db_user.course_tables.
+      // TODO: check if course_table_id is valid (is in coursetable collection).
+      // TODO: check if user_id in course_table object is the same as user_id.
+      // TODO: Add user id to course_table object.
+      // TODO: Add course table id to user object.
+      res.status(200).send({message: "User created", user: {db: new_user, auth0: auth0_user}});
+      return;
+    }
+  }catch(err){
+    res.status(500).send({user: null, message: err});
+  }
+});
+
 router.patch('/:id', async (req, res) => {
   const user_id = req.params.id;
   const patch_user = req.body.user;
