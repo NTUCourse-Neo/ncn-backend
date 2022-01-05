@@ -51,7 +51,7 @@ router.post('/ids', async (req, res) => {
   const strict_match = filter.strict_match;
   const time = filter.time;
   const department = filter.department;
-  const area = filter.area;
+  const area = filter.category;
   const enroll_method = filter.enroll_method;
 
   if(ids.length === 0) {
