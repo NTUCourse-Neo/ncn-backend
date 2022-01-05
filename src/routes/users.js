@@ -130,7 +130,7 @@ router.post('/:id/course_table', async (req, res) => {
         res.status(500).send({message: "Error in saving user data, restored coursetable data."});
         return;
       }
-      res.status(200).send({message: "Successfully linked course table to user.", course_tables: db_user.course_tables});
+      res.status(200).send({message: "Successfully linked course table to user.", user: {db: db_user}});
       return;
     }
   }catch(err){
