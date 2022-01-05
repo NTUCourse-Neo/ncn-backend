@@ -1,5 +1,6 @@
 import e from "express";
 import express from "express";
+import Course_table from "../models/Course_table";
 import Users from "../models/Users";
 import * as auth0_client from "../utils/auth0_client";
 
@@ -73,7 +74,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.post('/:id/coursetable', async (req, res) => {
+router.post('/:id/course_table', async (req, res) => {
   const course_table_id = req.body.course_table_id;
   const user_id = req.params.id;
   try{
@@ -82,28 +83,59 @@ router.post('/:id/coursetable', async (req, res) => {
       return;
     }else{
       const token = await auth0_client.get_token()
-      const auth0_users = await auth0_client.get_user_by_email(email, token)
+      const auth0_users = await auth0_client.get_user_by_id(user_id, token)
       // Check if user is registered in Auth0
       if(auth0_users.length === 0){
-        res.status(400).send({message: "User is not registered", user: null});
+        res.status(400).send({message: "User is not registered"});
         return;
       }
       // Check if user is registered in MongoDB
       const db_user = await Users.findOne({'_id': user_id});
       if(!db_user){
-        res.status(400).send({message: "User data not found", user: null});
+        res.status(400).send({message: "User data not found"});
         return;
       }
-      // TODO: check if course_table_id is already in db_user.course_tables.
-      // TODO: check if course_table_id is valid (is in coursetable collection).
-      // TODO: check if user_id in course_table object is the same as user_id.
-      // TODO: Add user id to course_table object.
-      // TODO: Add course table id to user object.
-      res.status(200).send({message: "User created", user: {db: new_user, auth0: auth0_user}});
+      // check if course_table_id is already in db_user.course_tables.
+      if(db_user.course_tables.includes(course_table_id)){
+        res.status(400).send({message: "Course table is already linked to this user"});
+      }
+      // check if course_table_id is valid (is in coursetable collection).
+      // check if user_id in course_table object is the same as user_id.
+      const course_table = await Course_table.findOne({"_id": course_table_id})
+      if(course_table.user_id && course_table.user_id !== user_id){
+        res.status(400).send({message: "Course table is already linked to another user"});
+      }
+      // Add user id to course_table object.
+      try{
+        if(!course_table.user_id){
+          course_table.user_id = user_id;
+        }
+        if(course_table.expire_ts){
+          course_table.expire_ts = null;
+        }
+        await course_table.save();
+      }catch{
+        res.status(500).send({message: "Error in saving coursetable."});
+        return;
+      }
+      // Add course table id to user object.
+      // !if this step fails, it will set the user_id in course_table object back to null to prevent data inconsistency.
+      try{
+        db_user.course_tables.push(course_table_id);
+        console.log(db_user.course_tables);
+        await db_user.save();
+      }catch{
+        course_table.user_id = null;
+        await course_table.save();
+        res.status(500).send({message: "Error in saving user data, restored coursetable data."});
+        return;
+      }
+      res.status(200).send({message: "Successfully linked course table to user.", course_tables: db_user.course_tables});
       return;
     }
   }catch(err){
-    res.status(500).send({user: null, message: err});
+    console.error(err);
+    res.status(500).send({message: err});
   }
 });
 
