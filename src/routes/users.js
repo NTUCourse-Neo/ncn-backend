@@ -83,9 +83,9 @@ router.post('/:id/course_table', async (req, res) => {
       return;
     }else{
       const token = await auth0_client.get_token()
-      const auth0_users = await auth0_client.get_user_by_id(user_id, token)
+      const auth0_user = await auth0_client.get_user_by_id(user_id, token)
       // Check if user is registered in Auth0
-      if(auth0_users.length === 0){
+      if(!auth0_user){
         res.status(400).send({message: "User is not registered"});
         return;
       }
@@ -98,12 +98,14 @@ router.post('/:id/course_table', async (req, res) => {
       // check if course_table_id is already in db_user.course_tables.
       if(db_user.course_tables.includes(course_table_id)){
         res.status(400).send({message: "Course table is already linked to this user"});
+        return;
       }
       // check if course_table_id is valid (is in coursetable collection).
       // check if user_id in course_table object is the same as user_id.
       const course_table = await Course_table.findOne({"_id": course_table_id})
       if(course_table.user_id && course_table.user_id !== user_id){
         res.status(400).send({message: "Course table is already linked to another user"});
+        return;
       }
       // Add user id to course_table object.
       try{
@@ -130,7 +132,7 @@ router.post('/:id/course_table', async (req, res) => {
         res.status(500).send({message: "Error in saving user data, restored coursetable data."});
         return;
       }
-      res.status(200).send({message: "Successfully linked course table to user.", user: {db: db_user}});
+      res.status(200).send({message: "Successfully linked course table to user.", user: {db: db_user, auth0: auth0_user}, course_table: course_table});
       return;
     }
   }catch(err){
