@@ -51,7 +51,7 @@ router.post('/ids', async (req, res) => {
   const strict_match = filter.strict_match;
   const time = filter.time;
   const department = filter.department;
-  const category = filter.category;
+  const area = filter.area;
   const enroll_method = filter.enroll_method;
 
   if(ids.length === 0) {
@@ -97,12 +97,12 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(dep);
       }
 
-      if(category !== null && category.length != 0) {
+      if(area !== null && area.length != 0) {
         let cat_list = [];
         let cat;
-        for(let i=0; i<category.length; i++) {
+        for(let i=0; i<area.length; i++) {
           let cat_clause = {
-            "category": category[i]
+            "area": area[i]
           }
           cat_list.push(cat_clause);
         }
@@ -177,12 +177,12 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(dep);
       }
 
-      if(category !== null && category.length != 0) {
+      if(area !== null && area.length != 0) {
         let cat_list = [];
         let cat;
-        for(let i=0; i<category.length; i++) {
+        for(let i=0; i<area.length; i++) {
           let cat_clause = {
-            "category": category[i]
+            "area": area[i]
           }
           cat_list.push(cat_clause);
         }
