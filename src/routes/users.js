@@ -146,7 +146,7 @@ router.patch('/:id', async (req, res) => {
   const patch_user = req.body.user;
   // Check if user exists
   try {
-    const db_user = await Users.findOne({'_id': user_id}).exec();
+    let db_user = await Users.findOne({'_id': user_id}).exec();
     if(!db_user){
       res.status(404).send({message: "User not found"});
       return;
@@ -179,7 +179,8 @@ router.patch('/:id', async (req, res) => {
     }
     // Update user in MongoDB.
     await Users.updateOne({'_id': user_id}, query).exec();
-    res.status(200).send({updates: query, message: "User updated."});
+    db_user = await Users.findOne({'_id': user_id}).exec();
+    res.status(200).send({user:{ db:db_user, auth0: auth0_user}, message: "User updated."});
   } catch (err) {
     res.status(500).send({message: err});
     console.error(err);
