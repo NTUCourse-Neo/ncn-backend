@@ -3,6 +3,7 @@ import express from "express";
 import Course_table from "../models/Course_table";
 import Users from "../models/Users";
 import * as auth0_client from "../utils/auth0_client";
+import { checkJwt } from "../auth";
 
 const router = express.Router();
 
@@ -141,6 +142,18 @@ router.post('/:id/course_table', async (req, res) => {
   }
 });
 
+router.post('/:id/student_id/otp', async (req, res) => {
+  const user_id = req.params.id;
+  const student_id = req.body.student_id;
+  const expire_minutes = 5;
+})
+
+router.post('/:id/student_id/link', async (req, res) => {
+  const user_id = req.params.id;
+  const student_id = req.body.student_id;
+  const otp = req.body.otp;
+})
+
 router.patch('/:id', async (req, res) => {
   const user_id = req.params.id;
   const patch_user = req.body.user;
@@ -163,8 +176,8 @@ router.patch('/:id', async (req, res) => {
     for(let key in patch_user){
       console.log(key);
       // Make sure client won't update _id and email.
-      if(key == "_id" || key == "email"){
-        res.status(400).send({message: "Cannot update _id or email"});
+      if(key == "_id" || key == "email" || key == "student_id"){
+        res.status(400).send({message: "Cannot update _id or email and student_id."});
         return;
       }
       // If the field exists and is not the same as the one in the database, update it.
