@@ -187,6 +187,43 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
+router.delete("/:id/profile", async(req, res) => {
+  try{
+    const user_id = req.params.id;
+    let db_user = await Users.findOne({'_id': user_id}).exec();
+    if(!db_user){
+      res.status(400).send({message: "User profile data is not in DB."});
+      return;
+    }
+    await Users.deleteOne({'_id': user_id}).exec();
+    res.status(200).send({message: "Successfully deleted user profile."})
+  }catch(err){
+    res.status(500).send({message: err});
+  }
+});
+
+router.delete("/:id/account", async(req, res) => {
+  try{
+    const user_id = req.params.id;
+    let db_user = await Users.findOne({'_id': user_id}).exec();
+    if(!db_user){
+      res.status(400).send({message: "User profile data is not in DB."});
+      return;
+    }
+    await Users.deleteOne({'_id': user_id}).exec();
+    const token = await auth0_client.get_token();
+    const auth0_user = await auth0_client.get_user_by_id(user_id, token);
+    if(!auth0_user){
+      res.status(400).send({message: "User is not registered in Auth0"});
+      return;
+    }
+    const result = await auth0_client.delete_user_by_id(user_id, token);
+    res.status(200).send({message: "Successfully deleted user account and profile."});
+  }catch(err){
+    res.status(500).send({message: err});
+  }
+});
+
 
 
 export default router;

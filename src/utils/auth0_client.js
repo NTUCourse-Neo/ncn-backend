@@ -40,4 +40,14 @@ const get_user_by_id = async (id, token) => {
   return resp.data;
 }
 
-export { get_token ,get_user_by_email, get_user_by_id };
+const delete_user_by_id = async(id, token) => {
+  let options = {
+    method: 'DELETE',
+    url: `${process.env.AUTH0_DOMAIN}/api/v2/users/${id}`,
+    headers: {'content-type': 'application/json', authorization: 'Bearer ' + token}
+  };
+  let resp = await axios.request(options);
+  return resp.data;
+};
+
+export { get_token ,get_user_by_email, get_user_by_id, delete_user_by_id };

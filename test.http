@@ -40,7 +40,7 @@ content-Type: application/json
 
 ###
 
-@id=auth0|61ceb6c3f995f80069e0da73
+@id=
 GET {{host}}/users/{{id}}
 Content-Type: application/json
 
@@ -55,3 +55,22 @@ Content-Type: application/json
         "student_id": "B07505032"
     }
 }
+
+###
+
+POST {{host}}/users/{{id}}/course_table
+Content-Type: application/json
+
+{
+    "course_table_id": "e0bb22fe-7169-49d5-9af2-b08a473f8f3a"
+}
+
+###
+@id=
+DELETE {{host}}/users/{{id}}/profile
+
+
+###
+
+@id=
+DELETE {{host}}/users/{{id}}/account
