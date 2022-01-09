@@ -9,6 +9,11 @@ const router = express.Router();
 
 router.get('/:id', checkJwt, async (req, res) => {
   const user_id = req.params.id;
+  const token_sub = req.user.sub;
+  if(token_sub !== user_id) {
+    res.status(403).send({course_table: null, message: "you are not authorized to get this user data."});
+    return;
+  }
   try {
     const token = await auth0_client.get_token();
     const auth0_user = await auth0_client.get_user_by_id(user_id, token);
@@ -31,6 +36,7 @@ router.get('/:id', checkJwt, async (req, res) => {
 
 router.post('/', checkJwt, async (req, res) => {
   const email = req.body.user.email;
+  const token_sub = req.user.sub;
   try{
     if(!email){
       res.status(400).send({message: "email is required", user: null});
@@ -51,6 +57,10 @@ router.post('/', checkJwt, async (req, res) => {
         auth0_user = auth0_users[0];
       }else{
         auth0_user = auth0_users.filter(user => !user.identities.isSocial)[0];
+      }
+      if(token_sub !== auth0_user.user_id) {
+        res.status(403).send({course_table: null, message: "you are not authorized to get this user data."});
+        return;
       }
       let new_user = new Users({
         _id: auth0_user.user_id,
@@ -78,6 +88,11 @@ router.post('/', checkJwt, async (req, res) => {
 router.post('/:id/course_table', checkJwt, async (req, res) => {
   const course_table_id = req.body.course_table_id;
   const user_id = req.params.id;
+  const token_sub = req.user.sub;
+  if(token_sub !== user_id) {
+    res.status(403).send({course_table: null, message: "you are not authorized to get this user data."});
+    return;
+  }
   try{
     if(!course_table_id || !user_id){
       res.status(400).send({message: "course_table_id and user_id is required", user: null});
@@ -142,20 +157,20 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
   }
 });
 
-router.post('/:id/student_id/otp', checkJwt, async (req, res) => {
-  const user_id = req.params.id;
+router.post('/student_id/otp', checkJwt, async (req, res) => {
+  const user_id = req.user.sub;
   const student_id = req.body.student_id;
   const expire_minutes = 5;
 })
 
-router.post('/:id/student_id/link', checkJwt, async (req, res) => {
-  const user_id = req.params.id;
+router.post('/student_id/link', checkJwt, async (req, res) => {
+  const user_id = req.user.sub;
   const student_id = req.body.student_id;
   const otp = req.body.otp;
 })
 
-router.patch('/:id', checkJwt, async (req, res) => {
-  const user_id = req.params.id;
+router.patch('/', checkJwt, async (req, res) => {
+  const user_id = req.user.sub;
   const patch_user = req.body.user;
   // Check if user exists
   try {
@@ -200,9 +215,9 @@ router.patch('/:id', checkJwt, async (req, res) => {
   }
 });
 
-router.delete("/:id/profile", checkJwt, async(req, res) => {
+router.delete("/profile", checkJwt, async(req, res) => {
   try{
-    const user_id = req.params.id;
+    const user_id = req.user.sub;
     let db_user = await Users.findOne({'_id': user_id}).exec();
     if(!db_user){
       res.status(400).send({message: "User profile data is not in DB."});
@@ -215,9 +230,9 @@ router.delete("/:id/profile", checkJwt, async(req, res) => {
   }
 });
 
-router.delete("/:id/account", checkJwt, async(req, res) => {
+router.delete("/account", checkJwt, async(req, res) => {
   try{
-    const user_id = req.params.id;
+    const user_id = req.user.sub;
     let db_user = await Users.findOne({'_id': user_id}).exec();
     if(!db_user){
       res.status(400).send({message: "User profile data is not in DB."});
