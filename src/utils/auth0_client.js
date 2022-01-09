@@ -50,4 +50,9 @@ const delete_user_by_id = async(id, token) => {
   return resp.data;
 };
 
-export { get_token ,get_user_by_email, get_user_by_id, delete_user_by_id };
+const get_user_meta_roles = async (id, token) => {
+  const user = await get_user_by_id(id, token);
+  return user.app_metadata.roles;
+};
+
+export { get_token ,get_user_by_email, get_user_by_id, delete_user_by_id, get_user_meta_roles };

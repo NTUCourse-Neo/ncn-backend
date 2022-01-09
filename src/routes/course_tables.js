@@ -1,10 +1,25 @@
 import express from 'express';
 import Course_table from '../models/Course_table';
+import { checkJwt } from '../auth';
+import * as auth0_client from "../utils/auth0_client";
 
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+const check_is_admin = async (user_id) => {
+    const token = await auth0_client.get_token();
+    const user_roles = await auth0_client.get_user_meta_roles(user_id, token);
+    if(!user_roles.includes('admin')){
+        return false;
+    }
+    return true;
+};
+
+router.get('/', checkJwt, async (req, res) => {
+    if(await check_is_admin(req.user.sub)){
+        res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
+        return;
+    }
     let result;
     try {
         reuslt = await Course_table.find();
@@ -17,7 +32,8 @@ router.get('/', async (req, res) => {
     }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', checkJwt, async (req, res) => {
+    const token_sub = req.user.sub;
     let course_id = req.params.id;
     let result;
     const expire_over_day = 1;
@@ -34,6 +50,8 @@ router.get('/:id', async (req, res) => {
         // console.log(overday);
         if(!user_id && overday > expire_over_day) {
             res.status(403).send({course_table: null, message: "this course table is expired"});
+        }else if(user_id && user_id !== token_sub){
+            res.status(403).send({course_table: null, message: "you are not authorized to get this coursetable."});
         }
         else {
             res.status(200).send({course_table: result, message: "get course table"});
@@ -45,10 +63,10 @@ router.get('/:id', async (req, res) => {
     }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', checkJwt, async (req, res) => {
     const _id = req.body.id;
     const course_table_name = req.body.name;
-    const user_id = req.body.user_id;
+    const user_id = req.user.sub;
     const semester = req.body.semester;
     
     let existing;
@@ -96,12 +114,17 @@ router.post('/', async (req, res) => {
     }
 })
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', checkJwt,async (req, res) => {
     const _id = req.params.id;
     const name = req.body.name;
     const user_id = req.body.user_id;
     const expire_ts = req.body.expire_ts;
     const courses = req.body.courses;
+    const token_sub = req.user.sub;
+    if(token_sub !== user_id) {
+        res.status(403).send({course_table: null, message: "you are not authorized to update this course table."});
+        return;
+    }
 
     let current_ts = + new Date();
     current_ts = parseInt(current_ts/1000, 10);
@@ -161,7 +184,11 @@ router.patch('/:id', async (req, res) => {
    
 })
 
-router.delete('/', async (req, res) => {
+router.delete('/', checkJwt, async (req, res) => {
+    if(await check_is_admin(req.user.sub)){
+        res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
+        return;
+    }
     try {
         await Course_table.deleteMany({});
         res.status(200).send({message: 'delete all course table successfully'});
@@ -173,7 +200,11 @@ router.delete('/', async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', checkJwt, async (req, res) => {
+    if(await check_is_admin(req.user.sub)){
+        res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
+        return;
+    }
     const _id = req.params.id;
     try {
         await Course_table.deleteOne({'_id': _id});
