@@ -7,7 +7,7 @@ import { checkJwt } from "../auth";
 
 const router = express.Router();
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', checkJwt, async (req, res) => {
   const user_id = req.params.id;
   try {
     const token = await auth0_client.get_token();
@@ -29,7 +29,7 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', checkJwt, async (req, res) => {
   const email = req.body.user.email;
   try{
     if(!email){
@@ -75,7 +75,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.post('/:id/course_table', async (req, res) => {
+router.post('/:id/course_table', checkJwt, async (req, res) => {
   const course_table_id = req.body.course_table_id;
   const user_id = req.params.id;
   try{
@@ -142,19 +142,19 @@ router.post('/:id/course_table', async (req, res) => {
   }
 });
 
-router.post('/:id/student_id/otp', async (req, res) => {
+router.post('/:id/student_id/otp', checkJwt, async (req, res) => {
   const user_id = req.params.id;
   const student_id = req.body.student_id;
   const expire_minutes = 5;
 })
 
-router.post('/:id/student_id/link', async (req, res) => {
+router.post('/:id/student_id/link', checkJwt, async (req, res) => {
   const user_id = req.params.id;
   const student_id = req.body.student_id;
   const otp = req.body.otp;
 })
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', checkJwt, async (req, res) => {
   const user_id = req.params.id;
   const patch_user = req.body.user;
   // Check if user exists
@@ -200,7 +200,7 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
-router.delete("/:id/profile", async(req, res) => {
+router.delete("/:id/profile", checkJwt, async(req, res) => {
   try{
     const user_id = req.params.id;
     let db_user = await Users.findOne({'_id': user_id}).exec();
@@ -215,7 +215,7 @@ router.delete("/:id/profile", async(req, res) => {
   }
 });
 
-router.delete("/:id/account", async(req, res) => {
+router.delete("/:id/account", checkJwt, async(req, res) => {
   try{
     const user_id = req.params.id;
     let db_user = await Users.findOne({'_id': user_id}).exec();

@@ -7,7 +7,7 @@ dotenv.config();
 const get_token = async () => {
   let options = {
     method: 'POST',
-    url: `${process.env.AUTH0_DOMAIN}/oauth/token`,
+    url: `https://${process.env.AUTH0_DOMAIN}/oauth/token`,
     headers: {'content-type': 'application/json'},
     data: {
       grant_type: 'client_credentials',
@@ -23,7 +23,7 @@ const get_token = async () => {
 const get_user_by_email = async (email, token) => {
   let options = {
     method: 'GET',
-    url: `${process.env.AUTH0_DOMAIN}/api/v2/users-by-email?email=${email}`,
+    url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users-by-email?email=${email}`,
     headers: {'content-type': 'application/json', authorization: 'Bearer ' + token}
   };
   let resp = await axios.request(options);
@@ -33,7 +33,7 @@ const get_user_by_email = async (email, token) => {
 const get_user_by_id = async (id, token) => {
   let options = {
     method: 'GET',
-    url: `${process.env.AUTH0_DOMAIN}/api/v2/users/${id}`,
+    url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${id}`,
     headers: {'content-type': 'application/json', authorization: 'Bearer ' + token}
   };
   let resp = await axios.request(options);
@@ -43,7 +43,7 @@ const get_user_by_id = async (id, token) => {
 const delete_user_by_id = async(id, token) => {
   let options = {
     method: 'DELETE',
-    url: `${process.env.AUTH0_DOMAIN}/api/v2/users/${id}`,
+    url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${id}`,
     headers: {'content-type': 'application/json', authorization: 'Bearer ' + token}
   };
   let resp = await axios.request(options);
