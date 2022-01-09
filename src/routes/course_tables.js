@@ -32,8 +32,7 @@ router.get('/', checkJwt, async (req, res) => {
     }
 })
 
-router.get('/:id', checkJwt, async (req, res) => {
-    const token_sub = req.user.sub;
+router.get('/:id', async (req, res) => {
     let course_id = req.params.id;
     let result;
     const expire_over_day = 1;
@@ -50,8 +49,6 @@ router.get('/:id', checkJwt, async (req, res) => {
         // console.log(overday);
         if(!user_id && overday > expire_over_day) {
             res.status(403).send({course_table: null, message: "this course table is expired"});
-        }else if(user_id && user_id !== token_sub){
-            res.status(403).send({course_table: null, message: "you are not authorized to get this coursetable."});
         }
         else {
             res.status(200).send({course_table: result, message: "get course table"});
@@ -63,10 +60,10 @@ router.get('/:id', checkJwt, async (req, res) => {
     }
 })
 
-router.post('/', checkJwt, async (req, res) => {
+router.post('/', async (req, res) => {
     const _id = req.body.id;
     const course_table_name = req.body.name;
-    const user_id = req.user.sub;
+    const user_id = req.body.user_id;
     const semester = req.body.semester;
     
     let existing;
@@ -114,17 +111,12 @@ router.post('/', checkJwt, async (req, res) => {
     }
 })
 
-router.patch('/:id', checkJwt,async (req, res) => {
+router.patch('/:id', async (req, res) => {
     const _id = req.params.id;
     const name = req.body.name;
     const user_id = req.body.user_id;
     const expire_ts = req.body.expire_ts;
     const courses = req.body.courses;
-    const token_sub = req.user.sub;
-    if(token_sub !== user_id) {
-        res.status(403).send({course_table: null, message: "you are not authorized to update this course table."});
-        return;
-    }
 
     let current_ts = + new Date();
     current_ts = parseInt(current_ts/1000, 10);
