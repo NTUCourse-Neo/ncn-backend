@@ -72,5 +72,37 @@ DELETE {{host}}/users/{{id}}/profile
 
 ###
 
-@id=
+@id=google-oauth2|112400711707143181176
 DELETE {{host}}/users/{{id}}/account
+
+###
+
+@token=
+POST {{host}}/users/student_id/link
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "student_id": "B07505032"
+}
+
+###
+
+POST {{host}}/users/student_id/link
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "student_id": "B07505032",
+    "otp_code": "907496"
+}
+
+###
+
+POST {{host}}/recaptcha
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "captcha_token": ""
+}

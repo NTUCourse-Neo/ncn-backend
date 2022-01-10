@@ -5,6 +5,7 @@ import Users from "../models/Users";
 import Otps from "../models/Otps";
 import * as auth0_client from "../utils/auth0_client";
 import { checkJwt } from "../auth";
+import { sendOtpEmail } from '../utils/email_client';
 
 dotenv.config();
 
@@ -166,8 +167,38 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
 router.post('/student_id/link', checkJwt, async (req, res) => {
   const user_id = req.user.sub;
   const student_id = req.body.student_id;
-  if (req.body.otp){
-    // validate otp
+  let db_user = await Users.findOne({'_id': user_id}).exec();
+  if(!db_user){
+    res.status(400).send({message: "User data not found"});
+    return;
+  }else if(db_user.student_id !== ""){
+    res.status(400).send({message: "User's student id is already set"});
+    return;
+  }
+  if(await Users.findOne({'student_id': student_id})){
+    res.status(400).send({message: "Student id is already registered by other user."});
+    return;
+  }
+  if (req.body.otp_code){
+    const otps = await Otps.find({'user_id': user_id, 'student_id': student_id}, {}, { sort: { 'expire_ts': -1 } }).exec();
+    if(otps.length === 0){
+      res.status(400).send({message: "OTP expired or not found."});
+      return;
+    }
+    const otp = otps[0];
+    console.log(otp);
+    if(otp.expire_ts < Date.now()){
+      res.status(400).send({message: "OTP expired."});
+      return;
+    }
+    if(otp.otp_code !== req.body.otp_code){
+      res.status(400).send({message: "OTP code is not correct."});
+      return;
+    }
+    db_user = await Users.findOne({'_id': user_id});
+    db_user.student_id = student_id;
+    await db_user.save();
+    await Otps.deleteMany({'user_id': user_id, 'student_id': student_id});
     res.status(200).send({message: "Student ID linked successfully."});
   }
   else{
@@ -176,29 +207,19 @@ router.post('/student_id/link', checkJwt, async (req, res) => {
     const expire_ts = Date.now() + expire_minutes * 60 * 1000;
     // TODO: validate student_id
     try{
-      const db_user = await Users.findOne({'_id': user_id}).exec();
-      if(!db_user){
-        res.status(400).send({message: "User data not found"});
-        return;
-      }else if(db_user.student_id !== ""){
-        res.status(400).send({message: "User's student id is already set"});
-        return;
-      }
-      if(await Users.findOne({'student_id': student_id})){
-        res.status(400).send({message: "Student id is already registered by other user."});
-        return;
-      }
       // generate a random 6 digit number
-      const otp_code = Math.floor(Math.random() * 1000000);
+      const otp_code = Math.floor(100000 + Math.random() * 900000)
+      console.log(otp_code);
       const new_otp = new Otps({
         user_id: user_id,
         student_id: student_id,
-        code: otp_code,
+        otp_code: otp_code,
         expire_ts: expire_ts
       });
       await new_otp.save();
       const ntu_mail = `${student_id}@ntu.edu.tw`;
-      // TODO: send an email to the user here.
+      // ! DISABLED FOR TESTING
+      // sendOtpEmail(ntu_mail, otp_code, db_user.name);
       res.status(200).send({message: "Successfully sent otp code to user's email.", expire_ts: expire_ts});
     }catch(err){
       console.error(err);
