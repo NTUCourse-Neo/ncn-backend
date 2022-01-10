@@ -31,14 +31,15 @@ router.post('/search', async (req, res) => {
           res.status(500).send({message: "Internal Server Error", log: err})
           console.error(err);
       }
-    }
-    try {
-      const result = await search(query, paths, collection);
-  
-      res.status(200).send({ ids: result });
-    } catch(err) {
-      res.status(500).send({message: "Internal Server Error", log: err})
-      console.error(err);
+    } else {
+      try {
+        const result = await search(query, paths, collection);
+    
+        res.status(200).send({ ids: result });
+      } catch(err) {
+        res.status(500).send({message: "Internal Server Error", log: err})
+        console.error(err);
+      }
     }
   });
 
