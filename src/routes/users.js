@@ -1,9 +1,12 @@
-import e from "express";
+import dotenv from 'dotenv-defaults';
 import express from "express";
 import Course_table from "../models/Course_table";
 import Users from "../models/Users";
+import Otps from "../models/Otps";
 import * as auth0_client from "../utils/auth0_client";
 import { checkJwt } from "../auth";
+
+dotenv.config();
 
 const router = express.Router();
 
@@ -160,16 +163,48 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
   }
 });
 
-router.post('/student_id/otp', checkJwt, async (req, res) => {
-  const user_id = req.user.sub;
-  const student_id = req.body.student_id;
-  const expire_minutes = 5;
-})
-
 router.post('/student_id/link', checkJwt, async (req, res) => {
   const user_id = req.user.sub;
   const student_id = req.body.student_id;
-  const otp = req.body.otp;
+  if (req.body.otp){
+    // validate otp
+    res.status(200).send({message: "Student ID linked successfully."});
+  }
+  else{
+    // get otp
+    const expire_minutes = process.env.OTP_EXPIRE_MINUTES || 5;
+    const expire_ts = Date.now() + expire_minutes * 60 * 1000;
+    // TODO: validate student_id
+    try{
+      const db_user = await Users.findOne({'_id': user_id}).exec();
+      if(!db_user){
+        res.status(400).send({message: "User data not found"});
+        return;
+      }else if(db_user.student_id !== ""){
+        res.status(400).send({message: "User's student id is already set"});
+        return;
+      }
+      if(await Users.findOne({'student_id': student_id})){
+        res.status(400).send({message: "Student id is already registered by other user."});
+        return;
+      }
+      // generate a random 6 digit number
+      const otp_code = Math.floor(Math.random() * 1000000);
+      const new_otp = new Otps({
+        user_id: user_id,
+        student_id: student_id,
+        code: otp_code,
+        expire_ts: expire_ts
+      });
+      await new_otp.save();
+      const ntu_mail = `${student_id}@ntu.edu.tw`;
+      // TODO: send an email to the user here.
+      res.status(200).send({message: "Successfully sent otp code to user's email.", expire_ts: expire_ts});
+    }catch(err){
+      console.error(err);
+      res.status(500).send({message: err});
+    }
+  }
 })
 
 router.patch('/', checkJwt, async (req, res) => {
