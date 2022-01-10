@@ -68,8 +68,11 @@ router.post('/', checkJwt, async (req, res) => {
         email: auth0_user.email,
         gender: 0,
         student_id: "",
-        department: [],
-        minor: [],
+        department: {
+          major: "",
+          d_major: "",
+          minors: []
+        },
         year: 0,
         language: "",
         favorites:[],
