@@ -127,19 +127,6 @@ router.post('/ids', async (req, res) => {
         }
         filter_condition.push(enroll);
       }
-      if(filter_condition.length == 0) {
-        search = {
-          "_id": {$in: ids}
-        }
-      }
-      else {
-        search = {
-          $and: [
-            {"_id": {$in: ids}},
-            {$and: filter_condition}
-          ]
-        }
-      }
     }
     else {
       let filter_condition = [];
@@ -207,42 +194,42 @@ router.post('/ids', async (req, res) => {
         }
         filter_condition.push(enroll);
       }
-      if(filter_condition.length === 0) {
-        search = [
-          {
-              $match: { _id: { $in: ids } }
-          },
-          {
-              $addFields: {
-                  index: { $indexOfArray: [ ids, "$_id" ] }
-              }
-          },
-          {
-              $sort: { index: 1 }
-          }
-        ];
-      }
-      else {
-        search = 
-        [
-          {
-              $match: {
-                $and: [
-                  { _id: { $in: ids } },
-                  { $and: filter_condition }
-                ]
-              }
-          },
-          {
-              $addFields: {
-                  index: { $indexOfArray: [ ids, "$_id" ] }
-              }
-          },
-          {
-              $sort: { index: 1 }
-          }
-        ];
-      }
+    }
+    if(filter_condition.length === 0) {
+      search = [
+        {
+            $match: { _id: { $in: ids } }
+        },
+        {
+            $addFields: {
+                index: { $indexOfArray: [ ids, "$_id" ] }
+            }
+        },
+        {
+            $sort: { index: 1 }
+        }
+      ];
+    }
+    else {
+      search = 
+      [
+        {
+            $match: {
+              $and: [
+                { _id: { $in: ids } },
+                { $and: filter_condition }
+              ]
+            }
+        },
+        {
+            $addFields: {
+                index: { $indexOfArray: [ ids, "$_id" ] }
+            }
+        },
+        {
+            $sort: { index: 1 }
+        }
+      ];
     }
     let result_num;
     let result;
