@@ -219,7 +219,7 @@ router.post('/student_id/link', checkJwt, async (req, res) => {
       await new_otp.save();
       const ntu_mail = `${student_id}@ntu.edu.tw`;
       // ! DISABLED FOR TESTING
-      // sendOtpEmail(ntu_mail, otp_code, db_user.name);
+      sendOtpEmail(ntu_mail, otp_code, db_user.name);
       res.status(200).send({message: "Successfully sent otp code to user's email.", expire_ts: expire_ts});
     }catch(err){
       console.error(err);
