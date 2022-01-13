@@ -2,6 +2,7 @@ import express from "express";
 import courses from '../models/Courses';
 import search from '../utils/search';
 import collection from "../utils/mongo_client";
+import { sendWebhookMessage } from "../utils/webhook_client";
 
 const router = express.Router();
 
@@ -14,6 +15,14 @@ router.get('/', async (req, res) => {
     }
     catch (err) {
         res.status(500).send({message: err})
+        const fields = [
+            {name: "Component", value: "Backend API endpoint"},
+            {name: "Method", value: "GET"},
+            {name: "Route", value: "/courses/"},
+            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+            {name: "Error Log", value: "```\n" + err + "\n```"}
+        ]
+        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
         console.error(err);
     }
 })
@@ -21,23 +30,25 @@ router.get('/', async (req, res) => {
 router.post('/search', async (req, res) => {
     const query = req.body.query;
     const paths = req.body.paths;
-    if (query === "" || !query) {
-      // if query is empty, return all courses
-      try {
-          const courses_pack = await courses.find().select({"_id": 1});
-          let result = courses_pack.map(a => a._id);
-          res.status(200).send({ids: result});
-      }catch (err) {
-          res.status(500).send({message: "Internal Server Error", log: err})
-          console.error(err);
-      }
-    }
     try {
+      if (query === "" || !query) {
+        // if query is empty, return all courses
+        const courses_pack = await courses.find().select({"_id": 1});
+        let result = courses_pack.map(a => a._id);
+        res.status(200).send({ids: result});
+      }
       const result = await search(query, paths, collection);
-  
       res.status(200).send({ ids: result });
     } catch(err) {
       res.status(500).send({message: "Internal Server Error", log: err})
+      const fields = [
+        {name: "Component", value: "Backend API endpoint"},
+        {name: "Method", value: "POST"},
+        {name: "Route", value: "/courses/search"},
+        {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+        {name: "Error Log", value: "```\n" + err + "\n```"}
+    ]
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
       console.error(err);
     }
   });
@@ -151,6 +162,14 @@ router.post('/ids', async (req, res) => {
       }
       catch (err) {
         res.status(500).send({message: err});
+        const fields = [
+          {name: "Component", value: "Backend API endpoint"},
+          {name: "Method", value: "POST"},
+          {name: "Route", value: "/courses/ids"},
+          {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+          {name: "Error Log", value: "```\n" + err + "\n```"}
+      ]
+      await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
       }
     }
     else {
@@ -269,6 +288,14 @@ router.post('/ids', async (req, res) => {
       }
       catch (err) {
         res.status(500).send({message: err});
+        const fields = [
+          {name: "Component", value: "Backend API endpoint"},
+          {name: "Method", value: "POST"},
+          {name: "Route", value: "/courses/ids"},
+          {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+          {name: "Error Log", value: "```\n" + err + "\n```"}
+      ]
+      await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
       }
     }
   }
