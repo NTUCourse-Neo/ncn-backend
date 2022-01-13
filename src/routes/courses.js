@@ -61,8 +61,8 @@ router.post('/ids', async (req, res) => {
   }
   else {
     let search;
+    let filter_condition = [];
     if(strict_match) {
-      let filter_condition = [];
       if(time !== null) {
         let record_time_list = [];
         let record_time;
@@ -129,7 +129,6 @@ router.post('/ids', async (req, res) => {
       }
     }
     else {
-      let filter_condition = [];
       if(time !== null) {
         let record_time_list = [];
         let record_time;
@@ -209,8 +208,7 @@ router.post('/ids', async (req, res) => {
             $sort: { index: 1 }
         }
       ];
-    }
-    else {
+    }else {
       search = 
       [
         {
