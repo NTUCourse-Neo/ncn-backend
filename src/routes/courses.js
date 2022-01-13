@@ -77,7 +77,7 @@ router.post('/ids', async (req, res) => {
         }
         if(record_time_list.length != 0) {
           record_time = {
-            $and: record_time_list
+            $or: record_time_list
           }
           filter_condition.push(record_time); 
         }
@@ -93,7 +93,7 @@ router.post('/ids', async (req, res) => {
           dep_list.push(dep_clause);
         }
         dep = {
-          $and: dep_list
+          $or: dep_list
         }
         filter_condition.push(dep);
       }
@@ -108,22 +108,14 @@ router.post('/ids', async (req, res) => {
           cat_list.push(cat_clause);
         }
         cat = {
-          $and: cat_list
+          $or: cat_list
         }
         filter_condition.push(cat);
       }
       
       if(enroll_method !== null && enroll_method.length != 0) {
-        let enroll_list = [];
-        let enroll;
-        for(let i=0; i<enroll_method.length; i++) {
-          let enroll_clause = {
-            "enroll_method": enroll_method[i]
-          }
-          enroll_list.push(enroll_clause);
-        }
         enroll = {
-          $and: enroll_list
+          "enroll_method": {$in: enroll_method}
         }
         filter_condition.push(enroll);
       }
@@ -135,10 +127,18 @@ router.post('/ids', async (req, res) => {
         for(let i=0; i<time.length; i++) {
           if(time[i].length != 0) {
             let constraint_title = 'time_loc_pair.time.' + (i+1);
-            let constraint_clause = {
-              [constraint_title]: {$all: time[i]}
+            let time_in_one_day = [];
+            for(let j=0; j<time[i].length; j++) {
+              let constraint_clause = {
+                [constraint_title]: time[i][j]
+              }
+              time_in_one_day.push(constraint_clause);
             }
-            record_time_list.push(constraint_clause);
+            if(time_in_one_day.length != 0) {
+              record_time_list.push({
+                $or: time_in_one_day
+              })
+            }
           }
         }
         if(record_time_list.length != 0) {
@@ -180,20 +180,13 @@ router.post('/ids', async (req, res) => {
       }
       
       if(enroll_method !== null && enroll_method.length != 0) {
-        let enroll_list = [];
-        let enroll;
-        for(let i=0; i<enroll_method.length; i++) {
-          let enroll_clause = {
-            "enroll_method": enroll_method[i]
-          }
-          enroll_list.push(enroll_clause);
-        }
         enroll = {
-          $or: enroll_list
+          "enroll_method": {$in: enroll_method}
         }
         filter_condition.push(enroll);
       }
     }
+
     if(filter_condition.length === 0) {
       search = [
         {
