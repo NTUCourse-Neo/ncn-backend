@@ -78,19 +78,15 @@ router.post('/', async (req, res) => {
     const semester = req.body.semester;
     
     let existing;
+
     try {
         existing = await Course_table.findOne({'_id': _id});
-    }
-    catch (err) {
-        console.error(err);
-    }
-    
-    if(existing) {
-        console.log('course table is existing')
-        res.status(400).send({course_table: existing, message: 'course table is existing'});        
-    }
-    else {
-        try {
+        if(existing) {
+            console.log('course table is existing')
+            res.status(400).send({course_table: existing, message: 'course table is existing'});
+            return;        
+        }
+        else {
             let day = 1;
             let expire_time_interval = 60 * 60 * 24 * day;
             let current_time = + new Date();
@@ -115,18 +111,18 @@ router.post('/', async (req, res) => {
             // console.log(expire_date.toString());
             res.status(200).send({course_table: new_course_table, message: 'create course table successfully'});
         }
-        catch (err) {
-            res.status(500).send({course_table: null, message: err});
-            const fields = [
-                {name: "Component", value: "Backend API endpoint"},
-                {name: "Method", value: "POST"},
-                {name: "Route", value: "/course_tables/"},
-                {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
-                {name: "Error Log", value: "```\n" + err + "\n```"}
-            ]
-            await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
-            console.error(err);
-        }     
+    }
+    catch (err) {
+        res.status(500).send({course_table: null, message: err});
+        const fields = [
+            {name: "Component", value: "Backend API endpoint"},
+            {name: "Method", value: "POST"},
+            {name: "Route", value: "/course_tables/"},
+            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+            {name: "Error Log", value: "```\n" + err + "\n```"}
+        ]
+        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
+        console.error(err);
     }
 })
 
