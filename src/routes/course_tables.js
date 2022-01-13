@@ -1,11 +1,26 @@
 import express from 'express';
 import Course_table from '../models/Course_table';
 import { sendWebhookMessage } from '../utils/webhook_client';
+import { checkJwt } from '../auth';
+import * as auth0_client from "../utils/auth0_client";
 
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+const check_is_admin = async (user_id) => {
+    const token = await auth0_client.get_token();
+    const user_roles = await auth0_client.get_user_meta_roles(user_id, token);
+    if(!user_roles.includes('admin')){
+        return false;
+    }
+    return true;
+};
+
+router.get('/', checkJwt, async (req, res) => {
+    if(await check_is_admin(req.user.sub)){
+        res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
+        return;
+    }
     let result;
     try {
         reuslt = await Course_table.find();
@@ -176,7 +191,11 @@ router.patch('/:id', async (req, res) => {
     }
 })
 
-router.delete('/', async (req, res) => {
+router.delete('/', checkJwt, async (req, res) => {
+    if(await check_is_admin(req.user.sub)){
+        res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
+        return;
+    }
     try {
         await Course_table.deleteMany({});
         res.status(200).send({message: 'delete all course table successfully'});
@@ -196,7 +215,11 @@ router.delete('/', async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', checkJwt, async (req, res) => {
+    if(await check_is_admin(req.user.sub)){
+        res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
+        return;
+    }
     const _id = req.params.id;
     try {
         await Course_table.deleteOne({'_id': _id});

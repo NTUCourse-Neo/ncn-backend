@@ -30,26 +30,41 @@ router.get('/', async (req, res) => {
 router.post('/search', async (req, res) => {
     const query = req.body.query;
     const paths = req.body.paths;
-    try {
-      if (query === "" || !query) {
-        // if query is empty, return all courses
-        const courses_pack = await courses.find().select({"_id": 1});
-        let result = courses_pack.map(a => a._id);
-        res.status(200).send({ids: result});
+    if (query === "" || !query) {
+      // if query is empty, return all courses
+      try {
+          const courses_pack = await courses.find().select({"_id": 1});
+          let result = courses_pack.map(a => a._id);
+          res.status(200).send({ids: result});
+      }catch (err) {
+          res.status(500).send({message: "Internal Server Error", log: err})
+          const fields = [
+            {name: "Component", value: "Backend API endpoint"},
+            {name: "Method", value: "POST"},
+            {name: "Route", value: "/courses/search"},
+            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+            {name: "Error Log", value: "```\n" + err + "\n```"}
+          ]
+          await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
+          console.error(err);
       }
-      const result = await search(query, paths, collection);
-      res.status(200).send({ ids: result });
-    } catch(err) {
-      res.status(500).send({message: "Internal Server Error", log: err})
-      const fields = [
-        {name: "Component", value: "Backend API endpoint"},
-        {name: "Method", value: "POST"},
-        {name: "Route", value: "/courses/search"},
-        {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
-        {name: "Error Log", value: "```\n" + err + "\n```"}
-    ]
-    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
-      console.error(err);
+    } else {
+      try {
+        const result = await search(query, paths, collection);
+    
+        res.status(200).send({ ids: result });
+      } catch(err) {
+        res.status(500).send({message: "Internal Server Error", log: err})
+        const fields = [
+          {name: "Component", value: "Backend API endpoint"},
+          {name: "Method", value: "POST"},
+          {name: "Route", value: "/courses/search"},
+          {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+          {name: "Error Log", value: "```\n" + err + "\n```"}
+        ]
+        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
+        console.error(err);
+      }
     }
   });
 
@@ -62,13 +77,15 @@ router.post('/ids', async (req, res) => {
   const strict_match = filter.strict_match;
   const time = filter.time;
   const department = filter.department;
-  const category = filter.category;
+  const area = filter.category;
   const enroll_method = filter.enroll_method;
 
   if(ids.length === 0) {
+    console.log('No ids provided.');
     res.status(200).send({courses: [], total_count: 0});
   }
   else {
+    let search;
     if(strict_match) {
       let filter_condition = [];
       if(time !== null) {
@@ -106,12 +123,12 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(dep);
       }
 
-      if(category !== null && category.length != 0) {
+      if(area !== null && area.length != 0) {
         let cat_list = [];
         let cat;
-        for(let i=0; i<category.length; i++) {
+        for(let i=0; i<area.length; i++) {
           let cat_clause = {
-            "category": category[i]
+            "area": area[i]
           }
           cat_list.push(cat_clause);
         }
@@ -135,8 +152,6 @@ router.post('/ids', async (req, res) => {
         }
         filter_condition.push(enroll);
       }
-
-      let search;
       if(filter_condition.length == 0) {
         search = {
           "_id": {$in: ids}
@@ -209,12 +224,12 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(dep);
       }
 
-      if(category !== null && category.length != 0) {
+      if(area !== null && area.length != 0) {
         let cat_list = [];
         let cat;
-        for(let i=0; i<category.length; i++) {
+        for(let i=0; i<area.length; i++) {
           let cat_clause = {
-            "category": category[i]
+            "area": area[i]
           }
           cat_list.push(cat_clause);
         }
@@ -238,8 +253,6 @@ router.post('/ids', async (req, res) => {
         }
         filter_condition.push(enroll);
       }
-
-      let search;
       if(filter_condition.length === 0) {
         search = [
           {
