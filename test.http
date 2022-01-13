@@ -8,3 +8,101 @@ content-type: application/json
     "query": "黃",
     "paths": ["course_name", "teacher"]
 }
+
+###
+
+POST {{host}}/courses/ids
+content-type: application/json
+
+{
+    "ids": ["1101_27674", "1101_30859"],
+    "filter": {
+        "strict_match": false,
+        "time": null,
+        "department": null,
+        "category": null,
+        "enroll_method": null
+    },
+    "batch_size": 100,
+    "offset": 0
+}
+
+###
+
+POST {{host}}/users
+content-Type: application/json
+
+{
+    "user":{
+        "email": "taste.ful.msa@gmail.com"
+    }
+}
+
+###
+
+@id=
+GET {{host}}/users/{{id}}
+Content-Type: application/json
+
+###
+
+PATCH {{host}}/users/{{id}}
+Content-Type: application/json
+
+{
+    "user":{
+        "name": "jc_hiroto",
+        "student_id": "B07505032"
+    }
+}
+
+###
+
+POST {{host}}/users/{{id}}/course_table
+Content-Type: application/json
+
+{
+    "course_table_id": "e0bb22fe-7169-49d5-9af2-b08a473f8f3a"
+}
+
+###
+@id=
+DELETE {{host}}/users/{{id}}/profile
+
+
+###
+
+@id=google-oauth2|112400711707143181176
+DELETE {{host}}/users/{{id}}/account
+
+###
+
+@token=
+POST {{host}}/users/student_id/link
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "student_id": "B07505032"
+}
+
+###
+
+POST {{host}}/users/student_id/link
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "student_id": "B07505032",
+    "otp_code": "907496"
+}
+
+###
+
+POST {{host}}/recaptcha
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "captcha_token": ""
+}
