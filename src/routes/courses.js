@@ -54,6 +54,7 @@ router.post('/ids', async (req, res) => {
   const department = filter.department;
   const area = filter.category;
   const enroll_method = filter.enroll_method;
+  console.log(enroll_method);
 
   if(ids.length === 0) {
     console.log('No ids provided.');
@@ -114,7 +115,7 @@ router.post('/ids', async (req, res) => {
       }
       
       if(enroll_method !== null && enroll_method.length != 0) {
-        enroll = {
+        let enroll = {
           "enroll_method": {$in: enroll_method}
         }
         filter_condition.push(enroll);
@@ -180,7 +181,7 @@ router.post('/ids', async (req, res) => {
       }
       
       if(enroll_method !== null && enroll_method.length != 0) {
-        enroll = {
+        let enroll = {
           "enroll_method": {$in: enroll_method}
         }
         filter_condition.push(enroll);
