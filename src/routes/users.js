@@ -6,6 +6,7 @@ import Otps from "../models/Otps";
 import * as auth0_client from "../utils/auth0_client";
 import { checkJwt } from "../auth";
 import { sendOtpEmail } from '../utils/email_client';
+import { sendWebhookMessage } from "../utils/webhook_client";
 
 dotenv.config();
 
@@ -33,8 +34,16 @@ router.get('/:id', checkJwt, async (req, res) => {
     }
   }
   catch (err) {
-      res.status(500).send({user: null, message: err});
-      console.error(err);
+    res.status(500).send({user: null, message: err});
+    const fields = [
+      {name: "Component", value: "Backend API endpoint"},
+      {name: "Method", value: "GET"},
+      {name: "Route", value: "users/:id"},
+      {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+      {name: "Error Log", value: "```\n" + err + "\n```"}
+    ]
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
+    console.error(err);
   }
 })
 
@@ -89,6 +98,14 @@ router.post('/', checkJwt, async (req, res) => {
     }
   }catch(err){
     res.status(500).send({user: null, message: err});
+    const fields = [
+      {name: "Component", value: "Backend API endpoint"},
+      {name: "Method", value: "POST"},
+      {name: "Route", value: "/users"},
+      {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+      {name: "Error Log", value: "```\n" + err + "\n```"}
+    ]
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
   }
 });
 
@@ -141,6 +158,14 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
         await course_table.save();
       }catch{
         res.status(500).send({message: "Error in saving coursetable."});
+        const fields = [
+          {name: "Component", value: "Backend API endpoint"},
+          {name: "Method", value: "POST"},
+          {name: "Route", value: "/users/:id/course_table"},
+          {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+          {name: "Error Log", value: "```\n" + err + "\n```"}
+        ]
+        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
         return;
       }
       // Add course table id to user object.
@@ -160,6 +185,14 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
     }
   }catch(err){
     console.error(err);
+    const fields = [
+      {name: "Component", value: "Backend API endpoint"},
+      {name: "Method", value: "POST"},
+      {name: "Route", value: "/users/:id/course_table"},
+      {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+      {name: "Error Log", value: "```\n" + err + "\n```"}
+    ]
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
     res.status(500).send({message: err});
   }
 });
@@ -223,6 +256,14 @@ router.post('/student_id/link', checkJwt, async (req, res) => {
       res.status(200).send({message: "Successfully sent otp code to user's email.", expire_ts: expire_ts});
     }catch(err){
       console.error(err);
+      const fields = [
+        {name: "Component", value: "Backend API endpoint"},
+        {name: "Method", value: "POST"},
+        {name: "Route", value: "/users/student_id/link"},
+        {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+        {name: "Error Log", value: "```\n" + err + "\n```"}
+      ]
+      await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
       res.status(500).send({message: err});
     }
   }
@@ -270,6 +311,14 @@ router.patch('/', checkJwt, async (req, res) => {
     res.status(200).send({user:{ db:db_user, auth0: auth0_user}, message: "User updated."});
   } catch (err) {
     res.status(500).send({message: err});
+    const fields = [
+      {name: "Component", value: "Backend API endpoint"},
+      {name: "Method", value: "PATCH"},
+      {name: "Route", value: "/users/"},
+      {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+      {name: "Error Log", value: "```\n" + err + "\n```"}
+    ]
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
     console.error(err);
   }
 });
@@ -286,6 +335,14 @@ router.delete("/profile", checkJwt, async(req, res) => {
     res.status(200).send({message: "Successfully deleted user profile."})
   }catch(err){
     res.status(500).send({message: err});
+    const fields = [
+      {name: "Component", value: "Backend API endpoint"},
+      {name: "Method", value: "DELETE"},
+      {name: "Route", value: "/users/profile"},
+      {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+      {name: "Error Log", value: "```\n" + err + "\n```"}
+    ]
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
   }
 });
 
@@ -308,6 +365,14 @@ router.delete("/account", checkJwt, async(req, res) => {
     res.status(200).send({message: "Successfully deleted user account and profile."});
   }catch(err){
     res.status(500).send({message: err});
+    const fields = [
+      {name: "Component", value: "Backend API endpoint"},
+      {name: "Method", value: "DELETE"},
+      {name: "Route", value: "/users/account"},
+      {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+      {name: "Error Log", value: "```\n" + err + "\n```"}
+    ]
+    await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
   }
 });
 
