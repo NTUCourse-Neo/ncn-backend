@@ -68,7 +68,6 @@ router.post('/ids', async (req, res) => {
   const department = filter.department;
   const area = filter.category;
   const enroll_method = filter.enroll_method;
-  console.log(enroll_method);
 
   if(ids.length === 0) {
     console.log('No ids provided.');
