@@ -38,7 +38,7 @@ router.get('/:id', checkJwt, async (req, res) => {
     const fields = [
       {name: "Component", value: "Backend API endpoint"},
       {name: "Method", value: "GET"},
-      {name: "Route", value: "users/:id"},
+      {name: "Route", value: "/users/:id"},
       {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
       {name: "Error Log", value: "```\n" + err + "\n```"}
     ]
@@ -314,7 +314,7 @@ router.patch('/', checkJwt, async (req, res) => {
     const fields = [
       {name: "Component", value: "Backend API endpoint"},
       {name: "Method", value: "PATCH"},
-      {name: "Route", value: "/users/"},
+      {name: "Route", value: "/users"},
       {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
       {name: "Error Log", value: "```\n" + err + "\n```"}
     ]
