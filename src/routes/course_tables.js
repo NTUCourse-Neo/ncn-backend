@@ -1,5 +1,6 @@
 import express from 'express';
 import Course_table from '../models/Course_table';
+import { sendWebhookMessage } from '../utils/webhook_client';
 import { checkJwt } from '../auth';
 import * as auth0_client from "../utils/auth0_client";
 
@@ -28,6 +29,14 @@ router.get('/', checkJwt, async (req, res) => {
     }
     catch (err) {
         res.status(500).send({coures_table: null, message: err});
+        const fields = [
+            {name: "Component", value: "Backend API endpoint"},
+            {name: "Method", value: "GET"},
+            {name: "Route", value: "/course_tables/"},
+            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+            {name: "Error Log", value: "```\n" + err + "\n```"}
+        ]
+        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
         console.error(err);
     }
 })
@@ -35,19 +44,13 @@ router.get('/', checkJwt, async (req, res) => {
 router.get('/:id', async (req, res) => {
     let course_id = req.params.id;
     let result;
-    const expire_over_day = 1;
     try {
         result = await Course_table.findOne({'_id': course_id});
         let user_id = result.user_id;
         let expire_time_stamp = result.expire_ts;
         let current_time_stamp = + new Date();
         current_time_stamp = parseInt(current_time_stamp/1000, 10);   // convernt milliseconds to senconds
-        // console.log(expire_time_stamp);
-        // console.log(current_time_stamp);
-        let overtime = current_time_stamp - expire_time_stamp;
-        let overday = overtime/(60*60*24);
-        // console.log(overday);
-        if(!user_id && overday > expire_over_day) {
+        if(!user_id && (current_time_stamp > expire_time_stamp)) {
             res.status(403).send({course_table: null, message: "this course table is expired"});
         }
         else {
@@ -56,6 +59,14 @@ router.get('/:id', async (req, res) => {
     }
     catch (err) {
         res.status(500).send({course_table: null, message: err});
+        const fields = [
+            {name: "Component", value: "Backend API endpoint"},
+            {name: "Method", value: "GET"},
+            {name: "Route", value: "/course_tables/:id"},
+            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+            {name: "Error Log", value: "```\n" + err + "\n```"}
+        ]
+        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
         console.error(err);
     }
 })
@@ -67,19 +78,15 @@ router.post('/', async (req, res) => {
     const semester = req.body.semester;
     
     let existing;
+
     try {
         existing = await Course_table.findOne({'_id': _id});
-    }
-    catch (err) {
-        console.error(err);
-    }
-    
-    if(existing) {
-        console.log('course table is existing')
-        res.status(400).send({course_table: existing, message: 'course table is existing'});        
-    }
-    else {
-        try {
+        if(existing) {
+            console.log('course table is existing')
+            res.status(400).send({course_table: existing, message: 'course table is existing'});
+            return;        
+        }
+        else {
             let day = 1;
             let expire_time_interval = 60 * 60 * 24 * day;
             let current_time = + new Date();
@@ -104,10 +111,18 @@ router.post('/', async (req, res) => {
             // console.log(expire_date.toString());
             res.status(200).send({course_table: new_course_table, message: 'create course table successfully'});
         }
-        catch (err) {
-            res.status(500).send({course_table: null, message: err});
-            console.error(err);
-        }     
+    }
+    catch (err) {
+        res.status(500).send({course_table: null, message: err});
+        const fields = [
+            {name: "Component", value: "Backend API endpoint"},
+            {name: "Method", value: "POST"},
+            {name: "Route", value: "/course_tables/"},
+            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+            {name: "Error Log", value: "```\n" + err + "\n```"}
+        ]
+        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
+        console.error(err);
     }
 })
 
@@ -117,63 +132,59 @@ router.patch('/:id', async (req, res) => {
     const user_id = req.body.user_id;
     const expire_ts = req.body.expire_ts;
     const courses = req.body.courses;
-
     let current_ts = + new Date();
     current_ts = parseInt(current_ts/1000, 10);
-    let target;
-    try {
-        target = await Course_table.findOne({'_id': _id});
-    }
-    catch (err) {
-        console.error(err);
-    }
-
-    if(!target) {
-        res.status(200).send({course_table: null, message: 'Course not found.'});
-    }
-    else {
-        if(user_id && expire_ts) {
-            res.status(403).send({course_table: null, message: 'User_id is not null, expire_ts should be null.'});
-        }
-        else if(user_id && !expire_ts) {
-            target.name= name;
-            target.user_id = user_id;
-            target.expire_ts = expire_ts;
-            target.courses = courses;
-            try {
-                await target.save();
-                res.status(200).send({course_table: target, message: 'Course table has been patched'});
-            }
-            catch (err) {
-                res.status(500).send({course_table: null, message: err});
-                console.error(err);
-            }
+    try{
+        let target = await Course_table.findOne({'_id': _id});
+        if(!target) {
+            res.status(200).send({course_table: null, message: 'Course not found.'});
         }
         else {
-            if(log_10(expire_ts) - log_10(current_ts) > 1) {
-                res.status(403).send({course_table: null, message: 'expire_ts is in milliseconds, please convert it to seconds'});
+            const origin_expire_ts = target.expire_ts;
+            if(origin_expire_ts && (current_ts > origin_expire_ts)) {
+                res.status(403).send({course_table: null, message: 'Course table is expired'});
             }
-            else if(current_ts > expire_ts) {
-                res.status(403).send({course_table: null, message: 'expire_ts is earlier than current time'});
+            else if(user_id && expire_ts) {
+                res.status(403).send({course_table: null, message: 'User_id is not null, expire_ts should be null.'});
             }
-            else {
-                target.name= name;
+            else if(user_id && !expire_ts) {
+                target.name = name;
                 target.user_id = user_id;
                 target.expire_ts = expire_ts;
                 target.courses = courses;
-                try {
+                await target.save();
+                res.status(200).send({course_table: target, message: 'Course table has been patched'});
+            }
+            else {
+                if(log_10(expire_ts) - log_10(current_ts) > 1) {
+                    res.status(403).send({course_table: null, message: 'expire_ts is in milliseconds, please convert it to seconds'});
+                }
+                else if(current_ts > expire_ts) {
+                    res.status(403).send({course_table: null, message: 'expire_ts is earlier than current time'});
+                }
+                else {
+                    target.name= name;
+                    target.user_id = user_id;
+                    target.expire_ts = expire_ts;
+                    target.courses = courses;
                     await target.save();
                     res.status(200).send({course_table: target, message: 'Course table has been patched'});
                 }
-                catch (err) {
-                    res.status(500).send({course_table: null, message: err});
-                    console.error(err);
-                }
+                
             }
-            
         }
+    }catch(err){
+        res.status(500).send({course_table: null, message: err});
+        const fields = [
+            {name: "Component", value: "Backend API endpoint"},
+            {name: "Method", value: "PATCH"},
+            {name: "Route", value: "/course_tables/:id"},
+            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+            {name: "Error Log", value: "```\n" + err + "\n```"}
+        ]
+        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
+        console.error(err);
     }
-   
 })
 
 router.delete('/', checkJwt, async (req, res) => {
@@ -188,6 +199,14 @@ router.delete('/', checkJwt, async (req, res) => {
     }
     catch (err) {
         res.status(500).send({message: err});
+        const fields = [
+            {name: "Component", value: "Backend API endpoint"},
+            {name: "Method", value: "DELETE"},
+            {name: "Route", value: "/course_tables/"},
+            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+            {name: "Error Log", value: "```\n" + err + "\n```"}
+        ]
+        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
         console.error(err);
     }
 })
@@ -205,6 +224,14 @@ router.delete('/:id', checkJwt, async (req, res) => {
     }
     catch (err) {
         res.status(500).send({message: err});
+        const fields = [
+            {name: "Component", value: "Backend API endpoint"},
+            {name: "Method", value: "DELETE"},
+            {name: "Route", value: "/course_tables/:id"},
+            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
+            {name: "Error Log", value: "```\n" + err + "\n```"}
+        ]
+        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
         console.error(err); 
     }
 })
