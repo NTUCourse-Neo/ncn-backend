@@ -203,51 +203,50 @@ router.post('/ids', async (req, res) => {
         filter_condition.push(enroll);
       }
     }
-    
-      if(filter_condition.length === 0) {
-        search = [
-          {
-              $match: { _id: { $in: ids } }
-          },
-          {
-              $addFields: {
-                  index: { $indexOfArray: [ ids, "$_id" ] }
-              }
-          },
-          {
-              $sort: { index: 1 }
-          }
-        ];
-      }
-      else {
-        search = 
-        [
-          {
-              $match: {
-                $and: [
-                  { _id: { $in: ids } },
-                  { $and: filter_condition }
-                ]
-              }
-          },
-          {
-              $addFields: {
-                  index: { $indexOfArray: [ ids, "$_id" ] }
-              }
-          },
-          {
-              $sort: { index: 1 }
-          }
-        ];
-      }
-      const result_num = await (await courses.aggregate(search)).length;
-      let result = await courses.aggregate(search).skip(offset).limit(batch_size);
-      if(offset == 0) {
-        res.status(200).send({courses: result, total_count: result_num});
-      }
-      else {
-        res.status(200).send({courses: result, total_count: null});
-      }
+  
+    if(filter_condition.length === 0) {
+      search = [
+        {
+            $match: { _id: { $in: ids } }
+        },
+        {
+            $addFields: {
+                index: { $indexOfArray: [ ids, "$_id" ] }
+            }
+        },
+        {
+            $sort: { index: 1 }
+        }
+      ];
+    }
+    else {
+      search = 
+      [
+        {
+            $match: {
+              $and: [
+                { _id: { $in: ids } },
+                { $and: filter_condition }
+              ]
+            }
+        },
+        {
+            $addFields: {
+                index: { $indexOfArray: [ ids, "$_id" ] }
+            }
+        },
+        {
+            $sort: { index: 1 }
+        }
+      ];
+    }
+    const result_num = await (await courses.aggregate(search)).length;
+    let result = await courses.aggregate(search).skip(offset).limit(batch_size);
+    if(offset == 0) {
+      res.status(200).send({courses: result, total_count: result_num});
+    }
+    else {
+      res.status(200).send({courses: result, total_count: null});
     }
   }
   catch (err) {
