@@ -68,6 +68,7 @@ router.post('/ids', async (req, res) => {
   const department = filter.department;
   const area = filter.category;
   const enroll_method = filter.enroll_method;
+  console.log(enroll_method);
 
   if(ids.length === 0) {
     console.log('No ids provided.');
@@ -76,8 +77,8 @@ router.post('/ids', async (req, res) => {
   }
   try {
     let search;
+    let filter_condition = [];
     if(strict_match) {
-      let filter_condition = [];
       if(time !== null) {
         let record_time_list = [];
         let record_time;
@@ -86,132 +87,6 @@ router.post('/ids', async (req, res) => {
             let constraint_title = 'time_loc_pair.time.' + (i+1);
             let constraint_clause = {
               [constraint_title]: time[i]
-            }
-            record_time_list.push(constraint_clause);
-          }
-        }
-        if(record_time_list.length != 0) {
-          record_time = {
-            $and: record_time_list
-          }
-          filter_condition.push(record_time); 
-        }
-      }
-
-      if(department !== null && department.length != 0) {
-        let dep_list = [];
-        let dep;
-        for(let i=0; i<department.length; i++) {
-          let dep_clause = {
-            "departments_dependency": department[i]
-          }
-          dep_list.push(dep_clause);
-        }
-        dep = {
-          $and: dep_list
-        }
-        filter_condition.push(dep);
-      }
-
-      if(area !== null && area.length != 0) {
-        let cat_list = [];
-        let cat;
-        for(let i=0; i<area.length; i++) {
-          let cat_clause = {
-            "area": area[i]
-          }
-          cat_list.push(cat_clause);
-        }
-        cat = {
-          $and: cat_list
-        }
-        filter_condition.push(cat);
-      }
-      
-      if(enroll_method !== null && enroll_method.length != 0) {
-        let enroll_list = [];
-        let enroll;
-        for(let i=0; i<enroll_method.length; i++) {
-          let enroll_clause = {
-            "enroll_method": enroll_method[i]
-          }
-          enroll_list.push(enroll_clause);
-        }
-        enroll = {
-          $and: enroll_list
-        }
-        filter_condition.push(enroll);
-      }
-
-      if(filter_condition.length === 0) {
-        search = [
-          {
-              $match: { _id: { $in: ids } }
-          },
-          {
-              $addFields: {
-                  index: { $indexOfArray: [ ids, "$_id" ] }
-              }
-          },
-          {
-              $sort: { index: 1 }
-          }
-        ];
-      }
-      else {
-        search = 
-        [
-          {
-              $match: {
-                $and: [
-                  { _id: { $in: ids } },
-                  { $and: filter_condition }
-                ]
-              }
-          },
-          {
-              $addFields: {
-                  index: { $indexOfArray: [ ids, "$_id" ] }
-              }
-          },
-          {
-              $sort: { index: 1 }
-          }
-        ];
-      }
-      /*
-      if(filter_condition.length == 0) {
-        search = {
-          "_id": {$in: ids}
-        }
-      }
-      else {
-        search = {
-          $and: [
-            {"_id": {$in: ids}},
-            {$and: filter_condition}
-          ]
-        }
-      }*/
-      const result_num = await courses.find(search).count();
-      const result = await courses.find(search).skip(offset).limit(batch_size);
-      if(offset == 0) {
-        res.status(200).send({courses: result, total_count: result_num});
-      }
-      else {
-        res.status(200).send({courses: result, total_count: null});
-      }
-    }
-    else {
-      let filter_condition = [];
-      if(time !== null) {
-        let record_time_list = [];
-        let record_time;
-        for(let i=0; i<time.length; i++) {
-          if(time[i].length != 0) {
-            let constraint_title = 'time_loc_pair.time.' + (i+1);
-            let constraint_clause = {
-              [constraint_title]: {$all: time[i]}
             }
             record_time_list.push(constraint_clause);
           }
@@ -255,63 +130,123 @@ router.post('/ids', async (req, res) => {
       }
       
       if(enroll_method !== null && enroll_method.length != 0) {
-        let enroll_list = [];
-        let enroll;
-        for(let i=0; i<enroll_method.length; i++) {
-          let enroll_clause = {
-            "enroll_method": enroll_method[i]
-          }
-          enroll_list.push(enroll_clause);
-        }
-        enroll = {
-          $or: enroll_list
+        let enroll = {
+          "enroll_method": {$in: enroll_method}
         }
         filter_condition.push(enroll);
       }
-      if(filter_condition.length === 0) {
-        search = [
-          {
-              $match: { _id: { $in: ids } }
-          },
-          {
-              $addFields: {
-                  index: { $indexOfArray: [ ids, "$_id" ] }
+      
+    }
+    else {
+      if(time !== null) {
+        let record_time_list = [];
+        let record_time;
+        for(let i=0; i<time.length; i++) {
+          if(time[i].length != 0) {
+            let constraint_title = 'time_loc_pair.time.' + (i+1);
+            let time_in_one_day = [];
+            for(let j=0; j<time[i].length; j++) {
+              let constraint_clause = {
+                [constraint_title]: time[i][j]
               }
-          },
-          {
-              $sort: { index: 1 }
+              time_in_one_day.push(constraint_clause);
+            }
+            if(time_in_one_day.length != 0) {
+              record_time_list.push({
+                $or: time_in_one_day
+              })
+            }
           }
-        ];
-      }
-      else {
-        search = 
-        [
-          {
-              $match: {
-                $and: [
-                  { _id: { $in: ids } },
-                  { $and: filter_condition }
-                ]
-              }
-          },
-          {
-              $addFields: {
-                  index: { $indexOfArray: [ ids, "$_id" ] }
-              }
-          },
-          {
-              $sort: { index: 1 }
+        }
+        if(record_time_list.length != 0) {
+          record_time = {
+            $or: record_time_list
           }
-        ];
+          filter_condition.push(record_time); 
+        }
       }
-      const result_num = await (await courses.aggregate(search)).length;
-      let result = await courses.aggregate(search).skip(offset).limit(batch_size);
-      if(offset == 0) {
-        res.status(200).send({courses: result, total_count: result_num});
+
+      if(department !== null && department.length != 0) {
+        let dep_list = [];
+        let dep;
+        for(let i=0; i<department.length; i++) {
+          let dep_clause = {
+            "departments_dependency": department[i]
+          }
+          dep_list.push(dep_clause);
+        }
+        dep = {
+          $or: dep_list
+        }
+        filter_condition.push(dep);
       }
-      else {
-        res.status(200).send({courses: result, total_count: null});
+
+      if(area !== null && area.length != 0) {
+        let cat_list = [];
+        let cat;
+        for(let i=0; i<area.length; i++) {
+          let cat_clause = {
+            "area": area[i]
+          }
+          cat_list.push(cat_clause);
+        }
+        cat = {
+          $or: cat_list
+        }
+        filter_condition.push(cat);
       }
+      
+      if(enroll_method !== null && enroll_method.length != 0) {
+        let enroll = {
+          "enroll_method": {$in: enroll_method}
+        }
+        filter_condition.push(enroll);
+      }
+    }
+  
+    if(filter_condition.length === 0) {
+      search = [
+        {
+            $match: { _id: { $in: ids } }
+        },
+        {
+            $addFields: {
+                index: { $indexOfArray: [ ids, "$_id" ] }
+            }
+        },
+        {
+            $sort: { index: 1 }
+        }
+      ];
+    }
+    else {
+      search = 
+      [
+        {
+            $match: {
+              $and: [
+                { _id: { $in: ids } },
+                { $and: filter_condition }
+              ]
+            }
+        },
+        {
+            $addFields: {
+                index: { $indexOfArray: [ ids, "$_id" ] }
+            }
+        },
+        {
+            $sort: { index: 1 }
+        }
+      ];
+    }
+    const result_num = await (await courses.aggregate(search)).length;
+    let result = await courses.aggregate(search).skip(offset).limit(batch_size);
+    if(offset == 0) {
+      res.status(200).send({courses: result, total_count: result_num});
+    }
+    else {
+      res.status(200).send({courses: result, total_count: null});
     }
   }
   catch (err) {
