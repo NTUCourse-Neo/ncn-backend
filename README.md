@@ -22,7 +22,8 @@ Backend API service for NTUCourse-Neo.
     ```bash
     cp .env.defaults .env
     ```
-    Then paste your keys into the file. Please refer to the guide below.    
+    Then paste your keys into the file. Please refer to the table below.    
+    *Reminder: Make sure you follow the [environment variable file format](https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file) of Docker.*
     | KEY                  | Description                                    | Default Value |
     | -------------------- | ---------------------------------------------- | ------------- |
     | MONGO_URL            | MongoDB connection string                      | N/A           |
@@ -52,10 +53,10 @@ Backend API service for NTUCourse-Neo.
 
 3. Run the built image in container
     ```bash
-    docker run -d --env-file .env -p 5000:5000 ncn-backend
+    docker run --env-file .env -p 5000:5000 ncn-backend
     ```
 
-4. Open the browser and go to `http://localhost:5000/api/v1/healthcheck`
+4. Open the browser and go to http://localhost:5000/api/v1/healthcheck
    
    and you should see the 200 OK response.
 5. Have fun! 🎉
@@ -71,7 +72,7 @@ Backend API service for NTUCourse-Neo.
     ```bash
     cp .env.defaults .env
     ```
-    Then paste your keys into the file. Please refer to the guide below.    
+    Then paste your keys into the file. Please refer to the table below.    
     | KEY                  | Description                                    | Default Value |
     | -------------------- | ---------------------------------------------- | ------------- |
     | MONGO_URL            | MongoDB connection string                      | N/A           |
@@ -98,7 +99,7 @@ Backend API service for NTUCourse-Neo.
     ```bash
     yarn server
     ```
-5. Open the browser and go to `http://localhost:5000/api/v1/healthcheck`
+5. Open the browser and go to http://localhost:5000/api/v1/healthcheck
    
    and you should see the 200 OK response.
 6. Have fun! 🎉
