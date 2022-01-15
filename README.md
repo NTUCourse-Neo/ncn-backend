@@ -97,3 +97,16 @@ Backend API service for NTUCourse-Neo.
 
 
 
+## 📦 Packages
+ - babel
+ - nodemon
+ - express
+ - axios
+ - cors
+ - dotenv-defaults
+ - express-jwt
+ - express-oauth2-jwt-bearer
+ - jwks-rsa
+ - mongoose
+ - mongodb
+ - @sendgrid/mail
