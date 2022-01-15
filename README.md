@@ -1,5 +1,13 @@
 # ncn-backend
 Backend API service for NTUCourse-Neo.
+
+[![GitHub branches](https://badgen.net/github/branches/NTUCourse-Neo/ncn-backend?a)](https://github.com/NTUCourse-Neo/ncn-backend)
+[![GitHub branches](https://badgen.net/github/merged-prs/NTUCourse-Neo/ncn-backend?a)](https://github.com/NTUCourse-Neo/ncn-backend)
+[![GitHub branches](https://badgen.net/github/commits/NTUCourse-Neo/ncn-backend?a)](https://github.com/NTUCourse-Neo/ncn-backend)
+[![GitHub Action](https://badgen.net/github/last-commit/NTUCourse-Neo/ncn-backend?a)](https://github.com/NTUCourse-Neo/ncn-backend)
+
+[![GitHub branches](https://github.com/NTUCourse-Neo/ncn-backend/actions/workflows/master_ntucourse-neo-api-v1.yml/badge.svg)](https://github.com/NTUCourse-Neo/ncn-backend/actions/workflows/master_ntucourse-neo-api-v1.yml)
+[![Better Uptime Badge](https://betteruptime.com/status-badges/v1/monitor/bqby.svg)](https://betteruptime.com/?utm_source=status_badge)
 ## 🛠 Deployment
 
 ### 🐋 Docker (Recommended)
