@@ -46,6 +46,10 @@ router.get('/:id', async (req, res) => {
     let result;
     try {
         result = await Course_table.findOne({'_id': course_id});
+        if(!result){
+            res.status(404).send({message: "Course table not found."});
+            return;
+        }
         let user_id = result.user_id;
         let expire_time_stamp = result.expire_ts;
         let current_time_stamp = + new Date();
