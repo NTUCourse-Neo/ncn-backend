@@ -7,8 +7,8 @@ const msg_tmpl =
   content: "",
   embeds: [
     {
-      title: "Alert",
-      description: "There are some errors occurred.",
+      title: "",
+      description: "",
       color: 16711680,
       fields: [
       ],
@@ -37,9 +37,12 @@ const sendWebhookMessage = async(type, desc, fields) => {
   if(process.env.ENV === "dev") { return; }
   try{
     let msg = JSON.parse(JSON.stringify(msg_tmpl));
+    if(type === "error"){
+      msg.content = "<@&932646597370720319>"
+    }
+    msg.embeds[0].description = desc;
     msg.embeds[0].title = msg_type[type].title;
     msg.embeds[0].color = msg_type[type].color;
-    msg.embeds[0].description = desc;
     msg.embeds[0].fields = fields;
     msg.embeds[0].timestamp = new Date().toISOString();
     let options = {
