@@ -74,6 +74,11 @@ router.post('/ids', async (req, res) => {
     res.status(200).send({courses: [], total_count: 0});
     return;
   }
+  else if(ids.length >= process.env.COURSE_REQUEST_LIMIT) {
+    console.log('Request course ids size exceeds limit.');
+    res.status(400).send({courses: [], message: 'Request course ids size exceeds limit.'});
+    return;
+  }
   try {
     let search;
     let filter_condition = [];
