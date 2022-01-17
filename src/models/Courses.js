@@ -27,7 +27,7 @@ const courses = new Schema({
     provider: String,
 })
 
-const Courses = mongoose.model('courses', courses);
+const Courses = mongoose.model('1102_courses', courses);
 
 export default Courses;
 

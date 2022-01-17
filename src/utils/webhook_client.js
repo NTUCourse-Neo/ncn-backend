@@ -42,7 +42,6 @@ const sendWebhookMessage = async(type, desc, fields) => {
     msg.embeds[0].description = desc;
     msg.embeds[0].fields = fields;
     msg.embeds[0].timestamp = new Date().toISOString();
-    console.log(msg);
     let options = {
       method: 'POST',
       url: process.env.DISCORD_WEBHOOK_URL,
