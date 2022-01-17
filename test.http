@@ -106,3 +106,13 @@ Authorization: {{token}}
 {
     "captcha_token": ""
 }
+
+###
+
+POST {{host}}/logs/info
+Content-Type: application/json
+
+{
+    "log": "Nice",
+    "component": "Test"
+}
