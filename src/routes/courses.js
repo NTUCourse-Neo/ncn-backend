@@ -57,8 +57,6 @@ router.post('/search', async (req, res) => {
     }
 });
 
-const max_search_size = 15000;
-
 router.post('/ids', async (req, res) => {
   const ids = req.body.ids;
   const filter = req.body.filter;
@@ -76,9 +74,9 @@ router.post('/ids', async (req, res) => {
     res.status(200).send({courses: [], total_count: 0});
     return;
   }
-  else if(ids.length >= max_search_size) {
-    console.log('Courses search ids too much');
-    res.status(400).send({courses: [], message: 'Courses search ids too much'});
+  else if(ids.length >= process.env.COURSE_REQUEST_LIMIT) {
+    console.log('Request course ids size exceeds limit.');
+    res.status(400).send({courses: [], message: 'Request course ids size exceeds limit.'});
     return;
   }
   try {
