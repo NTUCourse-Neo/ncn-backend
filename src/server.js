@@ -5,6 +5,7 @@ import course_router from './routes/courses';
 import user_router from './routes/users';
 import captcha_router from './routes/captcha';
 import course_table_router from './routes/course_tables';
+import logs_router from './routes/logs';
 import cors from 'cors';
 import mongoose from 'mongoose';
 require('dotenv-defaults').config();
@@ -18,6 +19,7 @@ app.use('/api/v1/courses', course_router);
 app.use('/api/v1/course_tables', course_table_router);
 app.use('/api/v1/users', user_router);
 app.use('/api/v1/recaptcha', captcha_router);
+app.use('/api/v1/logs', logs_router);
 
 dotenv.config();
 mongoose.connect(
