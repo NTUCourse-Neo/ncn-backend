@@ -226,9 +226,7 @@ router.post('/student_id/link', checkJwt, async (req, res) => {
       res.status(400).send({message: "OTP code is not correct."});
       return;
     }
-    db_user = await Users.findOne({'_id': user_id});
-    db_user.student_id = student_id;
-    await db_user.save();
+    await Users.updateOne({'_id': user_id}, {'student_id': student_id});
     await Otps.deleteMany({'user_id': user_id, 'student_id': student_id});
     res.status(200).send({message: "Student ID linked successfully."});
   }
