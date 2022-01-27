@@ -150,12 +150,11 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
       // Add user id to course_table object.
       try{
         if(!course_table.user_id){
-          course_table.user_id = user_id;
+          await Course_table.updateOne({"_id": course_table_id}, {"user_id": user_id});
         }
         if(course_table.expire_ts){
-          course_table.expire_ts = null;
+          await Course_table.updateOne({"_id": course_table_id}, {"expire_ts": null});
         }
-        await course_table.save();
       }catch{
         res.status(500).send({message: "Error in saving coursetable."});
         const fields = [
@@ -170,17 +169,16 @@ router.post('/:id/course_table', checkJwt, async (req, res) => {
       }
       // Add course table id to user object.
       // !if this step fails, it will set the user_id in course_table object back to null to prevent data inconsistency.
+      let new_db_user;
       try{
-        db_user.course_tables.push(course_table_id);
-        console.log(db_user.course_tables);
-        await db_user.save();
+        const new_course_tables = [...db_user.course_tables, course_table_id];
+        new_db_user = await Users.findOneAndUpdate({'_id': user_id}, {'course_tables': new_course_tables}, {new: true});
       }catch{
-        course_table.user_id = null;
-        await course_table.save();
+        await Course_table.updateOne({"_id": course_table_id}, {"user_id": null});
         res.status(500).send({message: "Error in saving user data, restored coursetable data."});
         return;
       }
-      res.status(200).send({message: "Successfully linked course table to user.", user: {db: db_user, auth0: auth0_user}});
+      res.status(200).send({message: "Successfully linked course table to user.", user: {db: new_db_user, auth0: auth0_user}});
       return;
     }
   }catch(err){
@@ -228,9 +226,7 @@ router.post('/student_id/link', checkJwt, async (req, res) => {
       res.status(400).send({message: "OTP code is not correct."});
       return;
     }
-    db_user = await Users.findOne({'_id': user_id});
-    db_user.student_id = student_id;
-    await db_user.save();
+    await Users.updateOne({'_id': user_id}, {'student_id': student_id});
     await Otps.deleteMany({'user_id': user_id, 'student_id': student_id});
     res.status(200).send({message: "Student ID linked successfully."});
   }

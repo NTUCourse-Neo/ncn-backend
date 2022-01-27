@@ -152,12 +152,8 @@ router.patch('/:id', async (req, res) => {
                 res.status(403).send({course_table: null, message: 'User_id is not null, expire_ts should be null.'});
             }
             else if(user_id && !expire_ts) {
-                target.name = name;
-                target.user_id = user_id;
-                target.expire_ts = expire_ts;
-                target.courses = courses;
-                await target.save();
-                res.status(200).send({course_table: target, message: 'Course table has been patched'});
+                const new_table = await Course_table.findOneAndUpdate({'_id': _id}, {name: name, user_id: user_id, expire_ts: expire_ts, courses: courses}, {new: true});
+                res.status(200).send({course_table: new_table, message: 'Course table has been patched'});
             }
             else {
                 if(log_10(expire_ts) - log_10(current_ts) > 1) {
@@ -167,12 +163,8 @@ router.patch('/:id', async (req, res) => {
                     res.status(403).send({course_table: null, message: 'expire_ts is earlier than current time'});
                 }
                 else {
-                    target.name= name;
-                    target.user_id = user_id;
-                    target.expire_ts = expire_ts;
-                    target.courses = courses;
-                    await target.save();
-                    res.status(200).send({course_table: target, message: 'Course table has been patched'});
+                    const new_table = await Course_table.findOneAndUpdate({'_id': _id}, {name: name, user_id: user_id, expire_ts: expire_ts, courses: courses}, {new: true});
+                    res.status(200).send({course_table: new_table, message: 'Course table has been patched'});
                 }
                 
             }
