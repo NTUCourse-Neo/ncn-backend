@@ -116,3 +116,68 @@ Content-Type: application/json
     "log": "Nice",
     "component": "Test"
 }
+
+###
+
+@post_id=0ab1d7eb-1448-4a0c-9877-7f9813d2065e
+@token=Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRUWUFscEtCYWF2dDRaSE1mb1JpLSJ9.eyJpc3MiOiJodHRwczovL250dWNvdXJzZS1uZW8udXMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDYxY2ViNmMzZjk5NWY4MDA2OWUwZGE3MyIsImF1ZCI6WyJodHRwczovL250dWNvdXJzZS1uZW8tYXBpLXYxLmF6dXJld2Vic2l0ZXMubmV0L2FwaS8iLCJodHRwczovL250dWNvdXJzZS1uZW8udXMuYXV0aDAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTY0NDY5MDc4MCwiZXhwIjoxNjQ0Nzc3MTgwLCJhenAiOiJicG1YT1c1WWp6a2YwdTB1NVV2clZMT0dsMnVuVjNDcyIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwifQ.B0gLVPbHoGuwgvL83bo60XIdAD_dfQhWAks-oU0hdYxafCbewJlF7yZWTw2W-SB915uRdn5bPWAo5nhjfW8wEerft8tp36MP10IhuBBzkgml6Qqo-2LuXi4BkI3qF47l_eqa93p8mKj_zZJo-JO6h3XuXV6pAvk4HYjiJDUHROerjkEmCSMPM5ySYgMrPILlfEH9B4S7SetjAStCQw316pGMHB_4Hlv7sFD5W2Jn684O_XHgKKGVwW9xpRdHW-2Pd-7XHc8Evuoi67QC6qPuu4IkFy9Et960qfqi2jqDeh13OFqz1CrWg5yG-wGjG1GbmgEBkaDpM_of9pBVIPbAEg
+GET {{host}}/social/posts/{{post_id}}
+Content-Type: application/json
+Authorization: {{token}}
+
+###
+
+@course_id=1102_97067
+GET {{host}}/social/courses/{{course_id}}/posts
+Content-Type: application/json
+Authorization: {{token}}
+
+###
+
+@course_id=1102_97067
+POST {{host}}/social/courses/{{course_id}}/posts
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "post": {
+        "type": "sign_up_info",
+        "content": {
+            "amount": 10,
+            "when": "Today",
+            "rule": "No rules",
+            "comment": "Test"
+        },
+        "user_type": "test"
+    }
+}
+
+###
+
+@token2=Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRUWUFscEtCYWF2dDRaSE1mb1JpLSJ9.eyJpc3MiOiJodHRwczovL250dWNvdXJzZS1uZW8udXMuYXV0aDAuY29tLyIsInN1YiI6Imdvb2dsZS1vYXV0aDJ8MTEyNDAwNzExNzA3MTQzMTgxMTc2IiwiYXVkIjpbImh0dHBzOi8vbnR1Y291cnNlLW5lby1hcGktdjEuYXp1cmV3ZWJzaXRlcy5uZXQvYXBpLyIsImh0dHBzOi8vbnR1Y291cnNlLW5lby51cy5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjQ0NjkyNDU4LCJleHAiOjE2NDQ3Nzg4NTgsImF6cCI6ImJwbVhPVzVZanprZjB1MHU1VXZyVkxPR2wydW5WM0NzIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCJ9.Jqke6CoFXrql39W6eaj5zW8-dOoXcga3-OpY5b9A3Txr5B6JZC4K-eUA3vgPuawm4uScWa8uJvTK6sRlX6i5vmJGbGCImFlLnpN6Rnp4bzUdyRqOsCIOnil8guHluF9hiRyHjZ81m0x-X9LQacEr7MWamT_nVqN5t1k3sh2CUJTCdpuPEzPoJBQMF5VS0Kw_p6b4Oy1HeyVHphLQ6YEXZDckT9OFvjg5SmAZJCtDK8w5XDDCnq_5xUaLErVtg4OzsRSrsgqiGf56svmF3yAyuaZ-EOv607hPcGioIPD0PBrtnDDEqz-n6d7Nf36VTHPQg2ePMqZYdfYxo6zW5cg1-w
+POST {{host}}/social/posts/{{post_id}}/report
+Content-Type: application/json
+Authorization: {{token2}}
+
+{
+    "report": {
+        "reason": "test"
+    }
+}
+
+###
+
+PATCH {{host}}/social/posts/{{post_id}}/votes
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "type": -1
+}
+
+###
+
+DELETE {{host}}/social/posts/{{post_id}}
+Content-Type: application/json
+Authorization: {{token}}
+

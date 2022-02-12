@@ -1,29 +1,31 @@
 import express from 'express';
 import Course_reports from '../models/Course_reports';
 import Post_reports from '../models/Post_reports';
+import Courses from '../models/Courses';
 import { sendWebhookMessage } from '../utils/webhook_client';
 import { checkJwt } from '../auth';
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
+import e from 'express';
 
 // route: "/api/v1/social"
 const router = express.Router();
 
 const get_self_vote_status = (post, user_id) => {
   if(post.upvotes.includes(user_id)){
-    self_vote_status = 1;
+    return 1;
   }else if(post.downvotes.includes(user_id)){
-    self_vote_status = -1;
+    return -1;
   }else{
-    self_vote_status = 0;
+    return 0;
   }
 }
 
 
-router.get('/posts/:id/', async (req, res) => {
+router.get('/posts/:id/', checkJwt, async (req, res) => {
   // get course social posts by course id
   const user_id = req.user.sub;
   const post_id = req.params.id;
-  const post = await Course_reports.findOne({_id: post_id});
+  const post = await Course_reports.findOne({'_id': post_id});
   if (!post) {
     res.status(404).send({message: "Post not found."});
     return;
@@ -34,6 +36,7 @@ router.get('/posts/:id/', async (req, res) => {
     course_id: post.course_id,
     type: post.type,
     content: post.content,
+    is_owner: post.user_id === user_id,
     user_type: post.user_type,
     create_ts: post.create_ts,
     upvotes: post.upvotes.length,
@@ -42,7 +45,7 @@ router.get('/posts/:id/', async (req, res) => {
   }});
 })
 
-router.get('/courses/:id/', async (req, res) => {
+router.get('/courses/:id/posts', checkJwt, async (req, res) => {
   // get course social posts by course id
   const user_id = req.user.sub;
   const course_id = req.params.id;
@@ -58,6 +61,7 @@ router.get('/courses/:id/', async (req, res) => {
         course_id: post.course_id,
         type: post.type,
         content: post.content,
+        is_owner: post.user_id === user_id,
         user_type: post.user_type,
         create_ts: post.create_ts,
         upvotes: post.upvotes.length,
@@ -68,10 +72,20 @@ router.get('/courses/:id/', async (req, res) => {
   });
 })
 
-router.post('/courses/:id/', async (req, res) => {
+router.post('/courses/:id/posts', checkJwt, async (req, res) => {
   // create course social posts by course id
   const user_id = req.user.sub;
   const course_id = req.params.id;
+  const course = await Courses.findOne({'_id': course_id});
+  if (!course) {
+    res.status(404).send({message: "Course not found."});
+    return;
+  }
+  const old_post = await Course_reports.findOne({'course_id': course_id, 'user_id': user_id});
+  if(old_post){
+    res.status(400).send({message: "You have already posted."});
+    return;
+  }
   const post = req.body.post;
   // provided by frondend:
   // post: {
@@ -80,7 +94,7 @@ router.post('/courses/:id/', async (req, res) => {
   //   "user_type": "",
   // }
   await Course_reports.create({
-    _id: uuid(),
+    _id: uuidv4(),
     course_id: course_id,
     type: post.type,
     content: post.content,
@@ -93,7 +107,7 @@ router.post('/courses/:id/', async (req, res) => {
   res.status(200).send({message: "Post created."})
 })
 
-router.post('/posts/:id/report', async (req, res) => {
+router.post('/posts/:id/report', checkJwt, async (req, res) => {
   // report a post by post id
   const user_id = req.user.sub;
   const post_id = req.params.id;
@@ -113,7 +127,7 @@ router.post('/posts/:id/report', async (req, res) => {
     return;
   }
   await Post_reports.create({
-    _id: uuid(),
+    _id: uuidv4(),
     post_id: post_id,
     user_id: user_id,
     reason: new_report.reason,
@@ -124,48 +138,64 @@ router.post('/posts/:id/report', async (req, res) => {
   res.status(200).send({message: "Post reported."})
 })
 
-router.patch('/posts/:id', async (req, res) => {
+router.patch('/posts/:id/votes', checkJwt, async (req, res) => {
   // like or dislike a social post by post id
-  // operation: like (1), dislike (-1)
+  // type: like (1), dislike (-1)
   const post_id = req.params.id;
   const user_id = req.user.sub;
-  const operation = req.body.operation;
+  const type = req.body.type;
   const post = await Course_reports.findOne({'_id': post_id});
   if(!post){
     res.status(404).send({message: "Post not found."});
     return;
   }
-  if(operation === 1){
+  if(type === 1){
     // check if user has already liked this post
     if(post.upvotes.includes(user_id)){
-      // if already liked, do un-like.
-      post.upvotes.splice(post.upvotes.indexOf(user_id), 1);
-    }else{
-      post.upvotes.push(user_id);
+      res.status(400).send({message: "You have already liked this post."});
+      return;
     }
+    if(post.downvotes.includes(user_id)){
+      // remove user's dislike
+      post.downvotes = post.downvotes.filter(id => id !== user_id);
+    }
+    post.upvotes.push(user_id);
   }
-  else if(operation === -1){
+  else if(type === -1){
     // check if user has already disliked this post
     if(post.downvotes.includes(user_id)){
-      // if already disliked, do un-dislike.
-      post.downvotes.splice(post.downvotes.indexOf(user_id), 1);
-    }else{
-      post.downvotes.push(user_id);
+      res.status(400).send({message: "You have already disliked this post."});
+      return;
+    }
+    if(post.upvotes.includes(user_id)){
+      // remove user's like
+      post.upvotes = post.upvotes.filter(id => id !== user_id);
+    }
+    post.downvotes.push(user_id);
+  }
+  else if(type === 0){
+    if(post.upvotes.includes(user_id)){
+      // remove user's like
+      post.upvotes = post.upvotes.filter(id => id !== user_id);
+    }
+    if(post.downvotes.includes(user_id)){
+      // remove user's dislike
+      post.downvotes = post.downvotes.filter(id => id !== user_id);
     }
   }
   else{
-    res.status(400).send({message: "Operation not supported."});
+    res.status(400).send({message: "type not supported."});
     return;
   }
-  await post.update();
-  res.status(200).send({message: "Post updated."});
+  await Course_reports.findByIdAndUpdate({'_id': post_id}, post);
+  res.status(200).send({message: "Vote updated."});
 })
 
-router.delete('/posts/:id', async (req, res) => {
+router.delete('/posts/:id', checkJwt, async (req, res) => {
   // delete a social post by post id
   const user_id = req.user.sub;
   const post_id = req.params.id;
-  const post = await Course_reports.deleteOne({'_id': post_id});
+  const post = await Course_reports.findOne({'_id': post_id});
   if(!post){
     res.status(404).send({message: "Post not found."});
     return;
@@ -174,6 +204,7 @@ router.delete('/posts/:id', async (req, res) => {
     res.status(400).send({message: "You cannot delete this post."});
     return;
   }
+  await Course_reports.deleteOne({'_id': post_id});
   res.status(200).send({message: "Post deleted."});
 })
 
