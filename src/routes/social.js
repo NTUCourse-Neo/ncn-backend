@@ -111,14 +111,9 @@ router.post('/courses/:id/posts', checkJwt, async (req, res) => {
       return;
     }
     const post = req.body.post;
-    // provided by frondend:
-    // post: {
-    //   "type": "",
-    //   "content": "",
-    //   "user_type": "",
-    // }
+    const uuid = uuidv4();
     await Course_reports.create({
-      _id: uuidv4(),
+      _id: uuid,
       course_id: course_id,
       type: post.type,
       content: post.content,
@@ -129,6 +124,15 @@ router.post('/courses/:id/posts', checkJwt, async (req, res) => {
       downvotes: []
     });
     res.status(200).send({message: "Post created."})
+    const fields = [
+      {name: "post_id", value: uuid},
+      {name: "type", value: post.type},
+      {name: "course_id", value: course_id},
+      {name: "course_name", value: course.course_name},
+      {name: "user", value: `${user_id} (${post.user_type})`},
+      {name: "content", value: "```\n"+JSON.stringify(post.content)+"\n```"},
+    ]
+    await sendWebhookMessage("info","🥵 There's a new community post!", fields);
   }catch(err){
     res.status(500).send({message: err});
     const fields = [
@@ -162,8 +166,9 @@ router.post('/posts/:id/report', checkJwt, async (req, res) => {
       res.status(400).send({message: "You cannot report your own post."});
       return;
     }
+    const uuid = uuidv4();
     await Post_reports.create({
-      _id: uuidv4(),
+      _id: uuid,
       post_id: post_id,
       user_id: user_id,
       reason: new_report.reason,
@@ -172,6 +177,14 @@ router.post('/posts/:id/report', checkJwt, async (req, res) => {
       resolved_ts: null
     });
     res.status(200).send({message: "Post reported."})
+    const fields = [
+      {name: "report_id", value: uuid},
+      {name: "post_id", value: post_id},
+      {name: "post_content", value: "```\n"+JSON.stringify(post.content)+"\n```"},
+      {name: "report_user_id", value: user_id},
+      {name: "reason", value: new_report.reason},
+    ]
+    await sendWebhookMessage("warning","👇😑👆 There's a new community post report case", fields);
   }catch(err){
     res.status(500).send({message: err});
     const fields = [
