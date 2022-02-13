@@ -27,18 +27,28 @@ const msg_type = {
     "title": "Error",
     "color": 16711680,
   },
+  "warning": {
+    "title": "Warning",
+    "color": 16776960,
+  },
   "info": {
     "title": "Info",
-    "color": 3731835,
-  }
+    "color": 39423,
+  },
+  "success": {
+    "title": "Success",
+    "color": 65379,
+  },
 }
 
 const sendWebhookMessage = async(type, desc, fields) => {
   if(process.env.ENV === "dev") { return; }
   try{
     let msg = JSON.parse(JSON.stringify(msg_tmpl));
-    if(type === "error"){
-      msg.content = "<@&932646597370720319>"
+    if(type === "error" || type === "warning") {
+      msg.content = "<@&932646597370720319>\n"+desc;
+    }else{
+      msg.content = desc;
     }
     msg.embeds[0].description = desc;
     msg.embeds[0].title = msg_type[type].title;
