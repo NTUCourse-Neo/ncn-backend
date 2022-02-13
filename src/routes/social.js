@@ -21,7 +21,7 @@ const get_self_vote_status = (post, user_id) => {
 
 
 router.get('/posts/:id/', checkJwt, async (req, res) => {
-  // get course social posts by course id
+  // get course social posts by post id
   try{
     const user_id = req.user.sub;
     const post_id = req.params.id;
