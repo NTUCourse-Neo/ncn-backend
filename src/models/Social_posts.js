@@ -10,7 +10,7 @@ const sign_up_content_schema = new Schema({
   comment: String // 備註
 });
 
-const course_report = new Schema({
+const social_post = new Schema({
     _id: String,    // uuid4
     course_id: String, //(map to course._id)
     type: String, // available types: sign_up_info
@@ -22,7 +22,7 @@ const course_report = new Schema({
     downvotes: [String]
 })
 
-const Course_reports = mongoose.model('course_reports', course_report);
+const Social_posts = mongoose.model('social_posts', social_post);
 
-export default Course_reports;
+export default Social_posts;
 

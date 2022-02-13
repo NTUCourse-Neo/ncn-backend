@@ -1,5 +1,5 @@
 import express from 'express';
-import Course_reports from '../models/Course_reports';
+import Social_posts from '../models/Social_posts';
 import Post_reports from '../models/Post_reports';
 import Courses from '../models/Courses';
 import { sendWebhookMessage } from '../utils/webhook_client';
@@ -25,7 +25,7 @@ router.get('/posts/:id/', checkJwt, async (req, res) => {
   try{
     const user_id = req.user.sub;
     const post_id = req.params.id;
-    const post = await Course_reports.findOne({'_id': post_id});
+    const post = await Social_posts.findOne({'_id': post_id});
     if (!post) {
       res.status(404).send({message: "Post not found."});
       return;
@@ -61,7 +61,7 @@ router.get('/courses/:id/posts', checkJwt, async (req, res) => {
   try{
     const user_id = req.user.sub;
     const course_id = req.params.id;
-    const posts = await Course_reports.find({'course_id': course_id});
+    const posts = await Social_posts.find({'course_id': course_id});
     if(posts.length === 0){
       res.status(404).send({message: "No posts found."});
       return;
@@ -105,14 +105,14 @@ router.post('/courses/:id/posts', checkJwt, async (req, res) => {
       res.status(404).send({message: "Course not found."});
       return;
     }
-    const old_post = await Course_reports.findOne({'course_id': course_id, 'user_id': user_id});
+    const old_post = await Social_posts.findOne({'course_id': course_id, 'user_id': user_id});
     if(old_post){
       res.status(400).send({message: "You have already posted."});
       return;
     }
     const post = req.body.post;
     const uuid = uuidv4();
-    await Course_reports.create({
+    await Social_posts.create({
       _id: uuid,
       course_id: course_id,
       type: post.type,
@@ -152,7 +152,7 @@ router.post('/posts/:id/report', checkJwt, async (req, res) => {
     const user_id = req.user.sub;
     const post_id = req.params.id;
     const new_report = req.body.report;
-    const post = await Course_reports.findOne({'_id': post_id});
+    const post = await Social_posts.findOne({'_id': post_id});
     const report = await Post_reports.findOne({'post_id': post_id, 'user_id': user_id});
     if(report){
       res.status(400).send({message: "You have already reported this post."})
@@ -205,7 +205,7 @@ router.patch('/posts/:id/votes', checkJwt, async (req, res) => {
     const post_id = req.params.id;
     const user_id = req.user.sub;
     const type = req.body.type;
-    const post = await Course_reports.findOne({'_id': post_id});
+    const post = await Social_posts.findOne({'_id': post_id});
     if(!post){
       res.status(404).send({message: "Post not found."});
       return;
@@ -248,7 +248,7 @@ router.patch('/posts/:id/votes', checkJwt, async (req, res) => {
       res.status(400).send({message: "type not supported."});
       return;
     }
-    await Course_reports.findByIdAndUpdate({'_id': post_id}, post);
+    await Social_posts.findByIdAndUpdate({'_id': post_id}, post);
     res.status(200).send({message: "Vote updated."});
   }catch(err){
     res.status(500).send({message: err});
@@ -268,7 +268,7 @@ router.delete('/posts/:id', checkJwt, async (req, res) => {
   try{
     const user_id = req.user.sub;
     const post_id = req.params.id;
-    const post = await Course_reports.findOne({'_id': post_id});
+    const post = await Social_posts.findOne({'_id': post_id});
     if(!post){
       res.status(404).send({message: "Post not found."});
       return;
@@ -277,7 +277,7 @@ router.delete('/posts/:id', checkJwt, async (req, res) => {
       res.status(400).send({message: "You cannot delete this post."});
       return;
     }
-    await Course_reports.deleteOne({'_id': post_id});
+    await Social_posts.deleteOne({'_id': post_id});
     res.status(200).send({message: "Post deleted."});
   }catch(err){
     res.status(500).send({message: err});
