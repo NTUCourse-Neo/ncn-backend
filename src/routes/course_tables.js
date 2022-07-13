@@ -10,9 +10,7 @@ const router = express.Router();
 const check_is_admin = async (user_id) => {
     const token = await auth0_client.get_token();
     const user_roles = await auth0_client.get_user_meta_roles(user_id, token);
-    return user_roles.includes('admin')
-    }
-    return false;
+    return user_roles.includes('admin');
 };
 
 router.get('/', checkJwt, async (req, res) => {
