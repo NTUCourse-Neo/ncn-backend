@@ -10,20 +10,20 @@ const router = express.Router();
 const check_is_admin = async (user_id) => {
     const token = await auth0_client.get_token();
     const user_roles = await auth0_client.get_user_meta_roles(user_id, token);
-    if(!user_roles.includes('admin')){
-        return false;
+    if(user_roles.includes('admin')){
+        return true;
     }
-    return true;
+    return false;
 };
 
 router.get('/', checkJwt, async (req, res) => {
-    if(await check_is_admin(req.user.sub)){
+    if(!await check_is_admin(req.user.sub)){
         res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
         return;
     }
     let result;
     try {
-        reuslt = await Course_table.find();
+        result = await Course_table.find();
         res.status(200).send({course_table: result, message: "Get full course table package"});
         console.log('Get full course table package.');
     }
@@ -183,32 +183,8 @@ router.patch('/:id', async (req, res) => {
     }
 })
 
-router.delete('/', checkJwt, async (req, res) => {
-    if(await check_is_admin(req.user.sub)){
-        res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
-        return;
-    }
-    try {
-        await Course_table.deleteMany({});
-        res.status(200).send({message: 'delete all course table successfully'});
-        console.log('delete all course table successfully.');
-    }
-    catch (err) {
-        res.status(500).send({message: err});
-        const fields = [
-            {name: "Component", value: "Backend API endpoint"},
-            {name: "Method", value: "DELETE"},
-            {name: "Route", value: "/course_tables/"},
-            {name: "Request Body", value: "```\n"+JSON.stringify(req.body)+"\n```"},
-            {name: "Error Log", value: "```\n" + err + "\n```"}
-        ]
-        await sendWebhookMessage("error","Error occurred in ncn-backend.", fields);
-        console.error(err);
-    }
-})
-
 router.delete('/:id', checkJwt, async (req, res) => {
-    if(await check_is_admin(req.user.sub)){
+    if(!await check_is_admin(req.user.sub)){
         res.status(403).send({course_table: null, message: "You are not authorized to get this data."});
         return;
     }
